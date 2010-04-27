@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PEanaly", "PEanaly\PEanaly.vcproj", "{DB4C4983-E885-4B08-A5DC-B86CF00807AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DB4C4983-E885-4B08-A5DC-B86CF00807AA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DB4C4983-E885-4B08-A5DC-B86CF00807AA}.Debug|Win32.Build.0 = Debug|Win32
+		{DB4C4983-E885-4B08-A5DC-B86CF00807AA}.Release|Win32.ActiveCfg = Release|Win32
+		{DB4C4983-E885-4B08-A5DC-B86CF00807AA}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
