@@ -9,6 +9,7 @@ public:
 		ZeroMemory(_servername,sizeof(_servername));
 		ZeroMemory(_serverdisplayname,sizeof(_serverdisplayname));
 		ZeroMemory(_serviceDescription,sizeof(_serviceDescription));
+		_isdebug=FALSE;
 		if(_service==NULL)
 		{
 			_service=this;
@@ -22,7 +23,8 @@ public:
 	void setDisplayname(const char *szdisplayname){strncpy(_serverdisplayname,szdisplayname,sizeof(_serviceDescription)-1);}
 	void setDescription(const char *szdescription){strncpy(_serviceDescription,szdescription,sizeof(_serviceDescription)-1);}
 
-	BOOL startservice(int argc, char* argv[]);
+	BOOL startservice();//正常启动服务
+	BOOL debugservice();//调试时，窗口方式启动
 	BOOL stopservice();
 	~WinService()
 	{
@@ -35,7 +37,7 @@ public:
 	virtual BOOL OnStart() {return TRUE;}
 	static WinService *GetService() {return _service;};
 protected:
-	static void LogEvent(LPCTSTR pFormat, ...);
+	void LogEvent(LPCTSTR pFormat, ...);
 private:
 
 	void run();//主线程持续等待
@@ -57,6 +59,7 @@ private:
 	SERVICE_STATUS _status;
 	SERVICE_STATUS_HANDLE _hServiceStatus;
 	BOOL _bInstall;
+	BOOL _isdebug;
 	DWORD _dwThreadID;
 //唯一一个实例
 	static WinService *_service;

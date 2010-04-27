@@ -83,10 +83,30 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=.\main.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\myservice.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\winservice.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\myservice.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\winservice.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 

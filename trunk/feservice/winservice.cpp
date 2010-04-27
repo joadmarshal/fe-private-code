@@ -1,32 +1,8 @@
 #include "WinService.h"
 #include <stdio.h>
 #include <stdarg.h>
-BOOL WinService::startservice(int argc, char* argv[])
+BOOL WinService::startservice()
 {
-	if ( (argc > 1) &&
-		((*argv[1] == '-') || (*argv[1] == '/')) )
-	{
-		
-		if ( _stricmp( "install", argv[1]+1 ) == 0 )
-		{
-			return Install();
-		}
-		else if ( _stricmp( "remove", argv[1]+1 ) == 0 )
-		{
-			return Uninstall();
-		}
-		else if ( _stricmp( "debug", argv[1]+1 ) == 0 )
-		{
-			//调试运行
-			_service->run();
-			return TRUE;
-		}
-		else
-		{
-			
-		}
-		
-	}
 	//注册服务
 	SERVICE_TABLE_ENTRY _st[2]={_servername,(LPSERVICE_MAIN_FUNCTION)ServiceMain,NULL,NULL};	
 
@@ -46,7 +22,12 @@ BOOL WinService::startservice(int argc, char* argv[])
 	}
 	return TRUE;
 }
-
+BOOL WinService::debugservice()
+{
+	_isdebug=TRUE;
+	_service->run();
+	return TRUE;
+}
 BOOL WinService::stopservice()
 {
 	if(this->OnStop())
@@ -210,13 +191,20 @@ void WinService::LogEvent(LPCTSTR pFormat, ...)
 	va_end(pArg);
 	
 	lpszStrings[0] = chMsg;
-	
-	hEventSource = RegisterEventSource(NULL, sv->_servername);
-	if (hEventSource != NULL)
+	if(_isdebug)
 	{
-		ReportEvent(hEventSource, EVENTLOG_INFORMATION_TYPE, 0, 0, NULL, 1, 0, (LPCTSTR*) &lpszStrings[0], NULL);
-		DeregisterEventSource(hEventSource);
+		printf("%s\n",chMsg);
 	}
+	else
+	{
+		hEventSource = RegisterEventSource(NULL, sv->_servername);
+		if (hEventSource != NULL)
+		{
+			ReportEvent(hEventSource, EVENTLOG_INFORMATION_TYPE, 0, 0, NULL, 1, 0, (LPCTSTR*) &lpszStrings[0], NULL);
+			DeregisterEventSource(hEventSource);
+		}
+	}
+	
 }
 
 void WINAPI WinService::ServiceStrl(DWORD dwOpcode)
@@ -240,7 +228,7 @@ void WINAPI WinService::ServiceStrl(DWORD dwOpcode)
 	case SERVICE_CONTROL_SHUTDOWN:
 		break;
 	default:
-		LogEvent("Bad service request");
+		sv->LogEvent("Bad service request");
 	}
 }
 
