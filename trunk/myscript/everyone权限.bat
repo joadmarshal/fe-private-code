@@ -1,0 +1,1 @@
+cacls "C:\Program Files\Venustech\Endpoint Security\ESServer\Update" /t /e /p everyone:f
