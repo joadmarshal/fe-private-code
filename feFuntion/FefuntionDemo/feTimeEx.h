@@ -1,1 +1,0 @@
-int GetMaxDayfromMonth(int year,int month);
