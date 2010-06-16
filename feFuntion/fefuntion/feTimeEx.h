@@ -1,4 +1,5 @@
 #include <time.h>
+#include <windows.h>
 int GetMaxDayfromMonth(int year,int month);//指定年月，得出该月天数
 
 void TimetToSystemTime( time_t t, LPSYSTEMTIME pst )
