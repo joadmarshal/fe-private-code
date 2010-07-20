@@ -3,7 +3,13 @@
 #define   SystemBasicInformation   0   
 #define   SystemPerformanceInformation   2   
 #define   SystemTimeInformation   3   
-
+enum dbstate
+{
+	dbstate_success = 0,
+	dbstate_dbConnectError = 1,
+	dbstate_dbsettingerror = 2,
+	dbstate_dbGetFreeDiskError = 3
+};
 #define  DAYSECOND  (24*60*60)
 enum timertasktype
 {

@@ -485,7 +485,7 @@ void ServerMonitor::GetMemStatus(DWORD *pdwFreeMem,DWORD *pdwTotalMem)//以单位mb
 	GlobalMemoryStatusEx(&MemStatex);//以mb为单位
 	*pdwFreeMem  = (DWORD)(MemStatex.ullAvailPhys/1024/1024);
 	*pdwTotalMem = (DWORD)(MemStatex.ullTotalPhys/1024/1024);
-	gLogger.info("GetMemStatus %d/%d",*pdwFreeMem,*pdwTotalMem);
+	gLogger.debug("GetMemStatus %d/%d",*pdwFreeMem,*pdwTotalMem);
 }
 
 typedef BOOL (WINAPI *PGETDISKFREESPACEEX)(LPCSTR,
@@ -567,6 +567,10 @@ void ServerMonitor::GetDBUseDisk(OUT DWORD* pdbhostip,OUT DWORD *freesize,OUT DW
 	{
 		strAlertServerini = path;
 		strAlertServerini += "\\AlertServer.ini";
+	}
+	else
+	{
+		strAlertServerini = g_strserverini;
 	}
 	
 	char constr[1024];
@@ -841,6 +845,7 @@ DWORD WINAPI ServerMonitor::ServerTimerThread(LPVOID lpParam)
 		time_t nowt =time(0);
 		int waittime = nexttask.nextTime - nowt;
 		waittime = waittime>0?waittime:0;
+		waittime = waittime>4000000?waittime:4000000;//防止waittime爆了,最怕值刚好是INFINITE了...
 		DWORD dwRet = WaitForSingleObject(sm->_hstop,waittime*1000);
 		switch( dwRet )
 		{
@@ -858,7 +863,10 @@ DWORD WINAPI ServerMonitor::ServerTimerThread(LPVOID lpParam)
 				if(nexttask.isInvalidTask())
 					sm->timertasklist.erase(sm->timertasklist.begin());
 			}
-
+			else
+			{
+				gLogger.debug("[ServerTimerThread] empty wait");
+			}
 			break;
 		default:
 			break;
@@ -988,7 +996,7 @@ void ServerMonitor::initTimerTaskList()
 			continue;
 			break;
 		}
-		gLogger.debug("[initTimerTaskList] push task %s",task.taskname.c_str());
+		gLogger.info("[initTimerTaskList] push task %s",task.taskname.c_str());
 		timertasklist.push_back(task);
 	}
 
@@ -998,7 +1006,7 @@ void ServerMonitor::initTimerTaskList()
 		iteTask->calculateNextTime();
 		if(iteTask->isInvalidTask())
 		{
-			gLogger.debug("[initTimerTaskList] erase task %s",iteTask->taskname.c_str());
+			gLogger.info("[initTimerTaskList] erase Invalid task %s",iteTask->taskname.c_str());
 			taskiterator __tempite =  iteTask++;
 			timertasklist.erase(__tempite);
 			
