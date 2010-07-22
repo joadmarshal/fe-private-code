@@ -1,0 +1,9 @@
+CREATE TRIGGER delInfoindex
+   ON  tbl_infoindex
+   for Delete
+AS 
+BEGIN
+	declare   @path  varchar(254)   
+	delete from tbl_detailinfo where path like (select   StorageDir+'%'   from   deleted)   
+END
+GO

@@ -1,0 +1,8 @@
+ossetup
+
+start /w ocsetup IIS-WebServerRole
+start /w ocsetup WAS-WindowsActivationService
+start /w ocsetup IIS-CGI
+
+
+ServerManagerCmd.exe -install Web-Server -allSubFeatures -resultPath C:\Admin\WebServer.xml -restart

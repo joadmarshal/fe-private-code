@@ -1,0 +1,121 @@
+1、你可以用SQLCMD执行交互式动作，如： 
+
+　　C:sqlcmd>sqlcmd 
+
+　　1> SELECT name from sys.databases 
+
+　　2> GO 
+
+　　你也可以试着键入如下命令，现实服务器列表: 
+
+　　1>:ServerList 
+
+　　SERVERS: 
+
+　　WUYZ 
+
+　　1> 
+
+　　如果想看其他命令的使用，可以键入:Help /? 
+
+　　2、执行SQL脚本文件 
+
+　　你可以在SQLCMD命令上加入参数I来执行SQL脚本文件，例如: 
+
+　　C:sqlcmd>sqlcmd -i test.sql 
+
+　　上面的I选项允许你执行一个脚本文件，另外，你也可以指定O选项，把命令的输出导出到指定文件,当然，我们也可以在代码中指定输出结果，如下: 
+
+　　C:sqlcmd>sqlcmd 
+
+　　1> :out output.txt 
+
+　　2> :r test.sql 
+
+　　在脚本中使用变量 
+
+　　SQLCMD支持可以在脚本中接收用户传入的变量信息，如下面语句: 
+
+　　SET NOCOUNT ON 
+
+　　Select $(Cols) from $(tablename) 
+
+　　GO 
+
+　　上面语句请求2个参数，我们可以通过指定相应的参数信息传给脚本，如下: 
+
+　　C:sqlcmd>sqlcmd -i test.sql -o Output.txt 
+
+　　-v cols="name,object_id,create_date" tablename="sys.objects" 
+
+　　上面语句的用途是：执行TEST.SQL脚本文件，并把输出的信息输出到OUTPUT.TXT文件中，并分别指定了COLS,TABLENAME的参数值
+
+　4、在脚本中设置变量的值 
+
+　　除了通过外部传入参数的值外，还可以在内部设置参数的值，如下面例子 
+
+　　e:sqlcmdbackuptemplate.sql 
+
+　　use master 
+
+　　backup database [$(db)] to disk='$(file)' 
+
+　　e:sqlcmdbackupsingle.sql 
+
+　　:setvar db msdb 
+
+　　:setvar file c:tempmsdb.bak 
+
+　　:r e:sqlcmdbackuptemplate.sql 
+
+　　如果你想知道当然定义了哪些变量，可以使用:listvar命令来显示 
+
+　　主要命令汇总： 
+
+　　:r filename 
+
+　　:ServerList 
+
+　　:List 
+
+　　:Listvar 
+
+　　:Error filename 　 STDOUT 　 STDERR 
+
+　　:Out filename 　 STDOUT 　 STDERR 
+
+　　:Perftrace filename 　 STDOUT 　 STDERR 
+
+　　:Connect server[instance] [timeout] [user_name[password] ] 
+
+　　:On Error [exit 　 ignore] 
+
+　　:SetVar variable value 
+
+　　:Help:XML ON 　 OFF 
+
+　　主要环境变量汇总： 
+
+　　-a SQLCMDPACKETSIZE 
+
+　　-d SQLCMDDBNAME 
+
+　　-H SQLCMDWORKSTATION 
+
+　　-h SQLCMDHEADERS 
+
+　　-l SQLCMDLOGINTIMEOUT 
+
+　　-m SQLCMDERRORLEVEL 
+
+　　-P SQLCMDPASSWORD 
+
+　　-S SQLCMSSERVER 
+
+　　-s SQLCMDCOLSEP 
+
+　　-t SQLCMDSTATTIMEOUT 
+
+　　-U SQLCMDUSER 
+
+　　-w SQLCMDCOLWIDTH

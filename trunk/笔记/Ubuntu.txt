@@ -1,0 +1,18 @@
+VM
+VMware workstation的vm菜单，点击install VMware tools，此时就会在Ubuntu桌面出现一个VMware tools的光盘镜像，打开该镜像，解压VMware toolsXXXX.tar.gz到一个目录下，就会在该目录下出现vmware-tools-distrib文件夹。打开终端以root身份执行如下命令：
+
+
+
+cd vmware-tools-distrib
+
+./vmware-install.pl
+
+装上VMware tools后，如果鼠标还是不能平滑移动，则是因为少装xserver-xorg-input-vmmouse的缘故，用
+
+sudo apt-get install xserver-xorg-input-vmmouse命令装上就ok了。
+
+一切搞定后，在系统->首选项->启动程序里，分别把/USR/BIN/vmware-toolbox和vmware-user两个命令添加上，重启系统，你就可以实现在主机和虚拟机之间共享文件，复制粘贴等功能了，感觉非常爽：）
+
+
+
+设置源

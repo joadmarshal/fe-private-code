@@ -1,0 +1,2 @@
+bios入口地址 0xffff:0x0000(FFFF0)
+显卡bios地址 		C0000H
