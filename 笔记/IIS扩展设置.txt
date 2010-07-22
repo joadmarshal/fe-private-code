@@ -1,0 +1,5 @@
+iisext /EnExt Payroll
+
+iisext /EnExt "ASP.NET v1.1.4322"
+
+CScript.exe %windir%\\system32\\iisext.vbs /EnExt \"ASP.NET v2.0.50727\"

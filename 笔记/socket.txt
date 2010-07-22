@@ -1,0 +1,10 @@
+struct sockaddr_in localthis;
+int lenn=sizeof(localthis);
+getsockname(s_Accept,(SOCKADDR *)&localthis,&lenn);
+char *ip = inet_ntoa(localthis.sin_addr);
+
+
+getsockname 可以得到客户端连接用的是哪个IP和端口，即使服务器指定的是INADDR_ANY
+
+
+服务器监听端口，可以在127.0.0.1上监听5656同时在另一个地址172.25.6.150上监听5656

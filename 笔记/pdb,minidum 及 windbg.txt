@@ -1,0 +1,5 @@
+pdb
+C++ General   debuginfo  program database
+
+link General	Generate debug info
+

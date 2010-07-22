@@ -1,0 +1,4 @@
+执行以下语句
+  DUMP     TRANSACTION   "库名"   WITH     NO_LOG           
+  BACKUP   LOG   "库名"   WITH   NO_LOG   
+  DBCC   SHRINKDATABASE("库名")

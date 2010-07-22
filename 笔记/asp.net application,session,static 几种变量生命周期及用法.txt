@@ -1,0 +1,28 @@
+asp.net application,session,static 几种变量生命周期及用法
+2009-10-30 16:13Application 是应用程序级变量,如果用到多个用户之间的通信的时候用,多用在网站计算器等,存活于整个应用程序运行周期
+
+static 作用于应用程序整个运行周期,
+
+Session运行设定的时间周期.   只能用在某个特定会话期间,多用在存储某个会话区间用户的数据.   是用户变量,一个用户访问多个页面时可以保存数据到另一个页面,只要此用户不注销就可以   在asp.net web应用程序中,有时session会很容易过期,可把web.config 文件中的 sessionState mode r的设置改成如下: mode="StateServer" 即可解决
+static   在内存中要比Session在服务器端要快.   
+ViewState     页面变量,相当于页面全局变量,但是一旦退出当前页面,它就会丢失 
+
+-----------------------
+
+application 与 static 的区别
+
+Application是通过一个集合保存所有的对象。 
+强类型: 
+Application中保存的是object,对对象的保存和使用需要作cast动作。对于值类型更需要Box&UnBox。对性能的影响较大。 
+而static变量是强类型的对象。 
+
+线程同步: 
+Application将所有的对象放到一个集合，这样对访问集合中的任何对象都会锁定这个集合。 
+假如有Application["A"]、Application["B"]、Application["C"],有线程访问Application["A"]其他线程不能访问Application["B"] and Application["C"]。 
+
+而static变量，可以根据他们的作用分别放在不同的class当中。这样可以并行访问不同的static变量，而不存在线程安全问题。 
+
+1. 对static变量，做lock时。可以通过lock(typeof(classname))来锁定该变量所在的类的类型，达到线程同步的目的。 
+
+2. 由于Aplication,static 是全局变量,而我们是在多线程服务器环境写程序，对他们的使用需要注意线程安全的问题。
+ 
