@@ -13,8 +13,16 @@ public:
 		//创建一个完成端口
 		m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
 		if(NULL == m_hCompletionPort)
-			throw std::exception("CreateIoCompletionPort error");
-		startrun();
+			throw std::exception("fe_Cpio_Reactor CreateIoCompletionPort error");
+		startrun(0);
+	}
+	fe_Cpio_Reactor(DWORD num)
+	{
+		//创建一个完成端口
+		m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
+		if(NULL == m_hCompletionPort)
+			throw std::exception("fe_Cpio_Reactor CreateIoCompletionPort error");
+		startrun(0);
 	}
 
 	~fe_Cpio_Reactor()
@@ -31,22 +39,34 @@ public:
 	}
 private:
 	typedef std::map<HANDLE,Cpio_handle_fun>::iterator iteHandleFun;
-	void startrun()
+	void startrun(DWORD numberOfThread)
 	{
-		for( int i = 0; i < 2; ++i )
+		if(numberOfThread==0)
+		{
+			SYSTEM_INFO systeminfo;
+			GetSystemInfo(&systeminfo);
+			m_dwNumberOfThread=systeminfo.dwNumberOfProcessors;
+		}
+		else
+			m_dwNumberOfThread = numberOfThread;
+		if(m_dwNumberOfThread == 0)
+			throw std::exception("fe_Cpio_Reactor 0 NumberOfThread");
+		for( int i = 0; i < m_dwNumberOfThread; ++i )
 		{
 			HANDLE hThread = (HANDLE)_beginthread(WorkThread, 0, this);
 			if( !hThread )
 			{
 				//CloseHandle(hThread);
-				throw;
+				throw std::exception("fe_Cpio_Reactor _beginthread error");
 			}
 		}
 	}
 
 	void stoprun()
 	{
-		PostQueuedCompletionStatus(m_hCompletionPort,0,0,0);
+		for (int i=0;i<m_dwNumberOfThread;++i)
+			PostQueuedCompletionStatus(m_hCompletionPort,0,0,0);
+		CloseHandle(m_hCompletionPort);
 	}
 
 	static void WorkThread(void *lParam)
@@ -65,6 +85,10 @@ private:
 				DWORD dwErr = GetLastError();
 				if( WAIT_TIMEOUT == dwErr )
 					continue;
+				else
+				{
+					return;
+				}
 			}
 			else
 			{
@@ -81,6 +105,7 @@ private:
 	}
 
 	HANDLE m_hCompletionPort;//完成端口
+	DWORD m_dwNumberOfThread;
 	std::map<HANDLE,Cpio_handle_fun> m_mHandleFun;
 	
 };
