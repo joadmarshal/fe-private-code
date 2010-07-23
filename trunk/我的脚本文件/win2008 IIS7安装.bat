@@ -1,0 +1,1 @@
+ServerManagerCmd.exe -install Web-Server -allSubFeatures

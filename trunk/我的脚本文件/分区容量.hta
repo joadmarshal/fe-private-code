@@ -1,0 +1,78 @@
+<html>
+<head>
+<hta:application
+    applicationname="磁盘空间查看脚"    
+    border="dialog"
+    borderstyle="normal"
+    caption="yes"
+    contextmenu="no"
+    maximizebutton="no"
+    minimizebutton="yes"
+    navigable="no"
+    scroll="yes"
+    selection="no"
+    showintaskbar="yes"
+    singleinstance="yes"
+    sysmenu="yes"
+    version="1.0"
+    windowstate="normal"
+>
+
+<script language="vbscript">
+<!-- Insert code, subroutines, and functions here -->
+window.resizeTo 500, 420
+  ileft=(window.screen.width-500)/2
+  itop=(window.screen.height-420)/2       
+  window.moveTo ileft,itop                     
+      
+Sub Window_onLoad 
+    GetDiskSpace 
+End Sub
+
+Sub GetDiskSpace
+Const HARD_DISK = 3
+Const Size = 1048576
+
+strComputer = "."
+Set objWMIService = GetObject("winmgmts:" _
+    & "{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+Set colDisks = objWMIService.ExecQuery _
+    ("Select * from Win32_LogicalDisk Where DriveType = " & HARD_DISK & "")
+    strHTML = "<table align=center width=95% borderColor=#698cc2 border='1' cellSpacing='0' cellpadding='1'>"       
+               strHTML = strHTML & "<tr>"
+        strHTML = strHTML & "<td width=110px align=center><font size=2><b>" & "分区" & "</b></td>"
+        strHTML = strHTML & "<td width=110px align=center><font size=2><b>" & "容量" & "</b></td>"
+        strHTML = strHTML & "<td width=110px align=center><font size=2><b>" & "已用" & "</b></td>"
+        strHTML = strHTML & "<td width=110px align=center><font size=2><b>" & "未用" & "</b></td>"
+        strHTML = strHTML & "<td width=110px align=center><font size=2><b>" & "空闲" & "</b></td>"
+    
+    
+For Each objDisk In colDisks    
+intFreeSpace = objDisk.FreeSpace/Size
+intTotalSpace = objDisk.Size/Size
+pctFreeSpace = intFreeSpace/Size/ intTotalSpace/Size
+infFuLin = intTotalSpace-intFreeSpace
+DeviceID = objDisk.DeviceID
+        strHTML = strHTML & "<tr>"
+        strHTML = strHTML & "<td width=110px align=center>" & DeviceID & "</td>"
+        strHTML = strHTML & "<td width=110px align=right>" & FormatNumber(intTotalSpace,2,-1,-1,0) & "</td>"
+        strHTML = strHTML & "<td width=110px align=right><font color=#DB2C00>" & FormatNumber(infFuLin,2,-1,-1,0) & "</td>"
+        strHTML = strHTML & "<td width=110px align=right><font color=#008080>" & FormatNumber(intFreeSpace,2,-1,-1,0) & "</td>"
+        strHTML = strHTML & "<td width=110px align=right>" & FormatPercent(intFreeSpace/intTotalSpace) & "</td>"
+  
+Next
+strHTML = strHTML & "</table>"
+DataArea.InnerHTML = strHTML
+End Sub
+
+</script>
+</head>
+
+<body>
+<!-- HTML goes here -->
+<table align=center width=95%><font color="#C63358"><b>磁盘空间查看脚本</b></font><br>
+    <font size="2">显示各磁盘分区使用情况（<font color="#FF0000">/MB</font>）</font></font></table>
+<body bgcolor="#99CCFF">
+    <span id = "DataArea"></span>
+</body>
+</html>
