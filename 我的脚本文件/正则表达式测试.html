@@ -1,0 +1,19 @@
+<script>
+function check()
+{
+   var reg = /^[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]$/;
+   var reg = new RegExp(document.getElementById("regtext").value,"i");
+   //var reg = /^[0-9]*$/i;
+   var str = document.getElementById("test").value;
+   if(reg.test(str))
+   	alert("匹配正确");
+   else
+   	alert("匹配失败");
+}
+</script>
+<span>正则表达式：</span><input name="regtext" type="text" id="regtext" style="width:100%;" />
+
+<span>测试字符串：</span><input name="test" type="text" id="test" style="width:100%;" />
+
+
+<input type="button" onclick="check();" value="测试">

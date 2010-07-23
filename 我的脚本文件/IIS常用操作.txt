@@ -1,0 +1,364 @@
+如果你想在VB ，ASP，VBS中操作服务器上的IIS，比如新建，删除，修改，绑域名，限网速等，只要学了ADSI这些都可以自动化实现，以下是收集最常用的，免去你网上到处查询的麻烦。
+新添对ISAPI筛选器的操作，收集本机所有域名的操作。
+
+
+使用ASP设置指定站点CPU最大使用程度
+'=================================================
+'函数介绍：设置指定站点CPU最大使用程度
+'本函数使用ADSI，需要Administrators组用户权限
+'函数名称：SetCPULimitVar (Computer,SiteNum,LimitVar)
+'用法：SetCPULimitVar 计算机名，站点编号，最大限制值（100=1%，1000=10%）
+'例：SetCPULimitVar "LocalHost","2","2000"
+'=================================================
+Function SetCPULimitVar(Computer,SiteNum,LimitVar)
+Set MyObj001 = GetObject("IIS://"&Computer&"/W3SVC/"&SiteNum)
+'设置启用CPU限制
+MyObj001.CpuLimitsEnabled = True
+'设置限制使用额度值
+MyObj001.CpuLimitLogEvent=LimitVar
+MyObj001.setinfo
+Set MyObj001=Nothing
+End Function 
+
+使用ASP在IIS创建WEB站点的函数
+'=============================================================
+'函数介绍：创建WebSite
+'本函数使用ADSI，需要Administrators组用户权限
+'函数名称：CreateWebSite(Computer,IPAddr,PortNum,HostName,WebSiteDirectory,LogDirectory,WebSiteInfo,GuestUserName,GuestUserPass,StartOrStop)
+'用法：CreateWebSite 计算机名(一搬为LocalHost或127.0.0.1),站点IP地址,端口号,主机名,站点根目录,,LOG文件的目录站点说明,网站访问时所使用的帐号,网站访问时所用帐号的口令,是否启动站点
+'例：CreateWebSite "LocalHost","127.0.0.123","80","www.test.net","E:\UserData\UserNum001","E:\UserData\UserNum001\LogFiles","wwwtest.net","IUSR_Num001_test.net","abc888",True
+'=============================================================
+Function CreateWebSite(Computer,IPAddr,PortNum,HostName,WebSiteDirectory,LogDirectory,WebSiteInfo,GuestUserName,GuestUserPass,StartOrStop)
+Dim w3svc, WebServer, NewWebServer, NewDir
+Dim Bindings, BindingString, NewBindings, SiteNum, SiteObj, bDone
+On Error Resume Next
+Err.Clear
+'检测是否能够加载W3SVC服务（即WEB服务）
+Set w3svc = GetObject("IIS://" & Computer & "/w3svc")
+If Err.Number <> 0 Then '显示错误提示
+response.write "无法打开: "&"IIS://" & Computer & "/w3svc"
+response.end
+End If
+'检测是否有设定相同IP地址、端口及主机名的站点存在
+BindingString = IPAddr & ":" & PortNum & ":" & HostName
+For Each WebServer in w3svc
+If WebServer.Class = "IIsWebServer" Then
+Bindings = WebServer.ServerBindings
+If BindingString = Bindings(0) Then
+response.write "IP地址冲突:" & IPAddr & ",请检测IP地址！."
+Exit Function
+End If
+End If
+Next
+
+'确定一个不存在的站点编号做为新建站点编号，系统默认WebSite站点编号为1，因此从2开始
+SiteNum=2
+bDone = False
+While (Not bDone)
+Err.Clear
+Set SiteObj = GetObject("IIS://"&Computer&"/w3svc/"&SiteNum) '加载指定站点
+If (Err.Number = 0) Then
+'response.write " Step_1站点"&SiteNum&"存在"
+SiteNum = SiteNum + 1
+Else
+'response.write " Step_1站点"&SiteNum&"不存在"
+Err.Clear
+Set NewWebServer = w3svc.Create("IIsWebServer",SiteNum) '创建指定站点
+If (Err.Number <> 0) Then
+'response.write " Step_2站点"&SiteNum&"创建失败"
+SiteNum = SiteNum + 1
+Else
+'response.write " Step_2站点"&SiteNum&"创建成功"
+bDone = True
+End If
+End If
+If (SiteNum > 50) Then '服务器最大创建站点数
+response.write "超出服务器最大创建站点数，正在创建的站点的序号为： "&SiteNum&"."
+response.end
+End If
+Wend
+
+'进行站点基本配置
+NewBindings = Array(0)
+NewBindings(0) = BindingString
+NewWebServer.ServerBindings = NewBindings
+NewWebServer.ServerComment= WebSiteInfo
+NewWebServer.AnonymousUserName= GuestUserName
+NewWebServer.AnonymousUserPass= GuestUserPass
+NewWebServer.KeyType = "IIsWebServer"
+NewWebServer.FrontPageWeb = True
+NewWebServer.EnableDefaultDoc = True
+NewWebServer.DefaultDoc = "Default.htm, Default.asp, Index.htm, Index.asp"
+NewWebServer.LogFileDirectory= LogDirectory
+NewWebServer.SetInfo
+Set NewDir = NewWebServer.Create("IIsWebVirtualDir", "ROOT")
+NewDir.Path = WebSiteDirectory
+NewDir.AccessRead = true
+NewDir.AppFriendlyName = "应用程序" & WebSiteInfo
+NewDir.AppCreate True
+NewDir.AccessScript = True
+Err.Clear
+NewDir.SetInfo
+If (Err.Number <> 0) Then
+response.write "主目录创建时出错."
+response.end
+End If
+If StartOrStop = True Then
+Err.Clear
+Set NewWebServer = GetObject("IIS://" & Computer & "/w3svc/" & SiteNum)
+NewWebServer.Start
+If Err.Number <> 0 Then
+response.write "启动站点时出错!"
+response.end
+Err.Clear
+End If
+End If
+response.write "站点创建成功，站点编号为："& SiteNum &" ，域名为："& HostName
+End Function
+
+使用ASP启动/停止指定WEB站点
+'=============================================================
+'函数介绍：使用ASP启动/停止指定WEB站点
+'本函数使用ADSI，需要Administrators组用户权限
+'函数名称：AdminWebSite(Computer,WebSiteNum,DoWhat)
+'用法：AdminWebSite(计算机名称,站点编号,启动/停止)
+'例：启动127.0.0.1计算机上站点编号为1的站点
+'AdminWebSite "127.0.0.1","1",1
+'例：停止127.0.0.1计算机上站点编号为1的站点
+'AdminWebSite "127.0.0.1","1",0
+'=============================================================
+Function AdminWebSite(Computer,WebSiteNum,DoWhat)
+On Error Resume Next
+Set objServer = GetObject("IIS://" & Computer & "/W3SVC/" & WebSiteNum)
+If Err.Number <> 0 Then
+Response.Write Now & ". 错误码: " & Hex(Err)& " - " & "无法开启指定站点
+"
+End If
+if Dowhat=1 then
+'使用Start启动站点
+objServer.Start
+If Err.Number <> 0 Then
+Response.Write "无法启动指定Web站点
+"
+else
+Response.Write "已经启动指定Web站点
+"
+End If
+elseif DoWhat=0 then
+'使用Stop停止站点
+objServer.Stop
+If Err.Number <> 0 Then
+Response.Write "无法停止指定Web站点
+"
+else
+Response.Write "已经停止指定Web站点
+"
+End If
+end if
+End Function 
+
+使用ASP列出服务器WEB站点信息
+'=============================================================
+'函数介绍：列出当前服务器WEB站点信息
+'本函数使用ADSI，需要Administrators组用户权限
+'函数名称：ListWebSite (Computer,Num)
+'用法：ListWebSite (计算机名称,显示站点数量)
+'例：显示127.0.0.1计算机上1000个站点信息
+'ListWebSite "127.0.0.1","1000"
+'=============================================================
+Function ListWebSite(Computer,Num)
+On Error Resume Next
+Set SiteObj = GetObject("IIS://"&Computer&"/w3svc/"&i)
+for i=0 to Num
+Err.Clear
+if Err.Number=0 then
+response.write " 
+
+以下显示为计算机："&Computer&"上所有站点信息
+
+"
+ShowWebSite = SiteObj.Get("ServerBindings") '获得站点IP地址:端口:主机头
+Info=split(ShowWebSite(0),":")
+response.write "站点编号："&i&"
+"
+response.write "站点IP地址："&Info(0)&"
+"
+response.write "站点端口："&Info(1)&"
+"
+response.write "站点主机头："&Info(2)&"
+
+"
+end if
+next
+set SiteOjb=nothing
+End Function 
+
+使用ASP删除指定IIS站点
+'=============================================================
+'函数介绍：删除指定IIS站点
+'本函数使用ADSI，需要Administrators组用户权限
+'函数名称：DelWebSite (Computer,SiteNum)
+'用法：DelWebSite 计算机名，站点编号
+'例：DelWebSite "127.0.0.1","2"
+'=============================================================
+Function DelWebSite(Computer,SiteNum)
+Set W3SVC = GetObject("IIS://"&Computer&"/w3svc")
+W3SVC.delete "IIsWebServer",SiteNum
+response.write "删除成功！"
+End Function
+
+通过ASP管理NT帐号
+'=============================================================
+'函数介绍：通过ASP管理NT帐号
+'本函数使用ADSI，需要Administrators组用户权限
+'=============================================================
+'填加用户
+'函数用法：AddUser(Computer,UserName,PassWord,FullName,Info)
+'参数：计算机名,帐号名称,帐号密码,帐号全名,帐号说明
+'例：AddUser "127.0.0.1","Test","Test","测试管理员帐号","本帐号通过ASP填加"
+'修改指定用户基本信息
+'函数用法：EditUser(Computer,UserName,OldPassWord,PassWord,FullName,Info)
+'参数：计算机名,帐号名称,帐号密码,帐号全名,帐号说明
+'例：EditUser "127.0.0.1","Test","Test2","测试管理员帐号修改","本帐号通过ASP修改过"
+'删除指定用户
+'函数用法：DelUser(Computer,UserName)
+'参数：计算机名,用户名'
+'例：DelUser "127.0.0.1","Test"
+=============================================================
+Function AddUser(Computer,UserName,PassWord,FullName,Info)
+'执行创建帐号命令
+Set ComputerObj = GetObject("WinNT://"&Computer)
+Set NewUser = ComputerObj.Create( "User" , UserName )
+NewUser.SetInfo
+'进行帐号设置
+NewUser.SetPassword ( PassWord ) '帐号密码
+NewUser.FullName = FullName '帐号全名
+NewUser.Description = Info '帐号说明
+NewUser.UserFlags = &H10000 '&H20000(使用者下次登入时须变更密码) &H0040(使用者不得变更密码) &H10000(密码永久正确) &H0002(帐户暂时停用)
+NewUser.SetInfo
+response.write "帐号"&UserName&"创建成功！"
+Set ComputerObj=nothing
+End Function 
+
+Function EditUser(Computer,UserName,OldPassWord,PassWord,FullName,Info)
+'读取用户信息
+Set ChangeUserObj = GetObject("WinNT://"&Computer&"/"&UserName&",User")
+'修改帐号密码
+if PassWord<>"" then
+ChangeUserObj.SetPassword PassWord
+response.write "帐号密码修改成功！
+"
+end if
+'修改帐号全名
+if FullName<>"" then
+UserFullName = ChangeUserObj.get("FullName")
+ChangeUserObj.FullName = FullName
+ChangeUserObj.SetInfo
+response.write "帐号全名修改成功！
+"
+end if
+'修改帐号说明
+if Info<>"" then
+UserFullName = ChangeUserObj.get("Description")
+ChangeUserObj.Description = Info
+ChangeUserObj.SetInfo
+response.write "帐号说明修改成功！
+"
+end if
+Set ChangeUserObj=nothing
+End Function
+
+Function DelUser(Computer,UserName)
+Set DelUserObj = GetObject("WinNT://"&Computer&"/"&UserName)
+If Err = &H800401E4 Then
+Response.Write "用户"&UserName&"不存在"
+Response.End
+End If
+Set DelObj = GetObject(DelUserObj.Parent)
+DelObj.Delete "User", DelUserObj.Name
+Set DelUserObj = Nothing
+Set DelObj = Nothing
+Response.Write "删除成功"
+End Function
+
+使用ASP控制指定站点解析脚本语言函数
+Function AdminAegis(Computer,SiteNum)
+Set IIsWebServiceObj = GetObject("IIS://"&Computer&"/W3SVC/"&SiteNum)
+dim Aegis(1)
+Aegis(0)=".asp,C:\WINNT\system32\inetsrv\asp.dll,5,GET,HEAD,POST,TRACE"
+'Aegis(1)=".aspx,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,1,GET,HEAD,POST,DEBUG"
+'解析其它文件请同样使用Aegis(Num)=""这种格式，记得要将dim Aegis(Num)定义
+'.htw,C:\WINNT\system32\webhits.dll,3,GET,HEAD,POST
+'.ida,C:\WINNT\system32\idq.dll,7,GET,HEAD,POST
+'.idq,C:\WINNT\system32\idq.dll,7,GET,HEAD,POST
+'.asp,C:\WINNT\system32\inetsrv\asp.dll,5,GET,HEAD,POST,TRACE
+'.cer,C:\WINNT\system32\inetsrv\asp.dll,5,GET,HEAD,POST,TRACE
+'.cdx,C:\WINNT\system32\inetsrv\asp.dll,5,GET,HEAD,POST,TRACE
+'.asa,C:\WINNT\system32\inetsrv\asp.dll,5,GET,HEAD,POST,TRACE
+'.idc,C:\WINNT\system32\inetsrv\httpodbc.dll,5,GET,POST
+'.shtm C:\WINNT\system32\inetsrv\ssinc.dll,5,GET,POST
+'.shtml C:\WINNT\system32\inetsrv\ssinc.dll,5,GET,POST
+'.stm C:\WINNT\system32\inetsrv\ssinc.dll,5,GET,POST
+'.asax C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.ascx,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.ashx,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,1,GET,HEAD,POST,DEBUG
+'.asmx,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,1,GET,HEAD,POST,DEBUG
+'.aspx,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,1,GET,HEAD,POST,DEBUG
+'.axd,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,1,GET,HEAD,POST,DEBUG
+'.vsdisco,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,1,GET,HEAD,POST,DEBUG
+'.rem,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,1,GET,HEAD,POST,DEBUG
+'.soap,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,1,GET,HEAD,POST,DEBUG
+'.config,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.cs,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.csproj,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.vb,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.vbproj,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.webinfo,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.licx,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.resx,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+'.resources,C:\WINNT\Microsoft.NET\Framework\v1.1.4322\aspnet_isapi.dll,5,GET,HEAD,POST,DEBUG
+IIsWebServiceObj.ScriptMaps=Aegis
+IIsWebServiceObj.SetInfo
+'显示支持脚本语言
+response.write "当前站点支持解析列表：
+"
+For ValueIndex = 0 To UBound(IIsWebServiceObj.ScriptMaps)
+response.write IIsWebServiceObj.Get("ScriptMaps")(ValueIndex)
+response.write "
+"
+Next
+End Function 
+
+使用ASP列出NT用户组及用户
+
+'=============================================================
+'函数介绍：列出NT用户组及用户
+'本函数使用ADSI，需要Administrators组用户权限
+'函数名称：ListGroup(Computer)
+'用法：ListGroup(计算机名称)
+'例：显示127.0.0.1计算机NT用户组及用户
+'ListGroup "127.0.0.1"
+'=============================================================
+Function ListGroup(Computer)
+response.write " 
+
+以下为计算机"&Computer&"系统用户组及用户列表
+
+"
+Set ComputerObj = GetObject("WinNT://"&Computer)
+ComputerObj.Filter = Array("Group")
+For Each Member in ComputerObj
+Response.Write "用户组："&Member.Name&"
+"
+ListUser Computer,Member.Name
+Next
+end Function
+
+'列出指定用户组用户
+Function ListUser(Computer,Group)
+Set UserObj = GetObject("WinNT://"&Computer&"/"&Group)
+For Each Member in UserObj.Members
+Response.write " 组中用户："&Member.Name &"
+"
+Next
+End Function
