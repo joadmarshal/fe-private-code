@@ -2,89 +2,56 @@
 #include <process.h>
 //#include <stdio.h>
 #include <iostream>
+#include "feRWlock.h"
 int i;
-LockCriticalSection g_cslocker;
-LockEvent g_eventLocker;
+// LockCriticalSection g_cslocker;
+// LockEvent g_eventLocker;
+RwLockEvent<LockCriticalSection> rwlock(2);
 
-class tempchar
+struct tests 
 {
-public:
-	tempchar()
-	{
-		data_=NULL;
-	}
-	~tempchar()
-	{
-		if(data_)
-			delete data_;
-	}
-private:
-	char *data_;
+	int a;
+	int b;
+	int c;
+	int d;
 };
-DWORD WINAPI thread1(void *p)
+tests testval= {1,1,1,1};
+void ReadThread(void *p)
 {
+	int i = (int)p;
 	while(1)
 	{
-		TLocker<LockEvent> lock(g_eventLocker);
-		printf("%d\n",i++);
+		TRLocker<RwLockEvent<LockCriticalSection>> rlocker(rwlock);
+		printf("%d Rthread ,%d,%d,%d,%d\n",i,testval.a,testval.b,testval.c,testval.d);
 	}
 }
-// int main()
-// {
-// 	CreateThread(0,0,thread1,0,0,0);
-//  	CreateThread(0,0,thread1,0,0,0);
-// 	Sleep(2000);
-// };
 
-
-
-volatile bool threadStarted = false;
-
-void leaker()
+void Writehread(void *p)
 {
-	char abc[1024];
-	std::cout << atoi( "0" ) << std::endl;
-	std::cout << abs(2.0f) << std::endl;
-	std::cout << rand() << std::endl;
-	sprintf(abc,"%s,%d,%f","abc",6,6.0f);
-	printf(abc);
+	int i = (int)p;
+	while(1)
+	{
+		TWLocker<RwLockEvent<LockCriticalSection>> wlocker(rwlock);
+		printf("%d Wthread\n",i);
+		testval.a++;
+		testval.b++;
+		Sleep(1);
+		testval.c++;
+		testval.d++;
+	}
 }
 
-DWORD __stdcall CreateThreadFunc( LPVOID )
-{
-	leaker();
-	threadStarted = false;
-	return 0;
-}
-
-unsigned int __stdcall beginThreadExFunc( LPVOID )
-{
-	leaker();
-	threadStarted = false;
-	return 0;
-}
-
-void __cdecl beginThreadFunc( LPVOID )
-{
-	leaker();
-	threadStarted = false;
-}
 
 int main()
 {
-	int i=2000;
+	
+	_beginthread( ReadThread, 0, (void *)1 );
+	_beginthread( ReadThread, 0, (void *)2 );
+	_beginthread( Writehread, 0, (void *)1 );
+	_beginthread( Writehread, 0, (void *)2 );
 	for(;;)
 	{
-		while( threadStarted )
-			Sleep( 5 );
-		threadStarted = true;
-		//_beginthread( beginThreadFunc, 0, 0 );//1
-		//CreateThread( NULL, 0, CreateThreadFunc, 0, 0, 0 );//2
-		_beginthreadex(0,0,beginThreadExFunc,0,0,0);
-		// 		i--;
-		// 		if(i<0)
-		// 			break;
+
 	}
-	system("pause");
 	return 0;
 }
