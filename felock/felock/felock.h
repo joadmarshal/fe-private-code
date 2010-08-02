@@ -18,6 +18,39 @@ private:
 
 };
 
+class LockCriticalSection
+{
+public:
+	LockCriticalSection()
+	{
+		::InitializeCriticalSection(&cs_);
+	}
+	virtual ~LockCriticalSection()
+	{
+		::DeleteCriticalSection(&cs_);
+	}
+
+	void Lock()
+	{
+		::EnterCriticalSection(&cs_);
+	}
+
+	void Unlock()
+	{
+		::LeaveCriticalSection(&cs_);
+	}
+
+#if _WIN32_WINNT >= 0x0400
+	bool TestLock()
+	{
+		return TryEnterCriticalSection(&cs_);
+	}
+#endif // _DEBUG
+
+private:
+	CRITICAL_SECTION cs_;
+};
+
 class LockSemaphore
 {
 public:
@@ -56,38 +89,7 @@ private:
 	HANDLE hSemaphore;
 };
 
-class LockCriticalSection
-{
-public:
-	LockCriticalSection()
-	{
-		::InitializeCriticalSection(&cs_);
-	}
-	virtual ~LockCriticalSection()
-	{
-		::DeleteCriticalSection(&cs_);
-	}
 
-	void Lock()
-	{
-		::EnterCriticalSection(&cs_);
-	}
-
-	void Unlock()
-	{
-		::LeaveCriticalSection(&cs_);
-	}
-
-#if _WIN32_WINNT >= 0x0400
-	bool TestLock()
-	{
-		return TryEnterCriticalSection(&cs_);
-	}
-#endif // _DEBUG
-	
-private:
-	CRITICAL_SECTION cs_;
-};
 
 class LockEvent
 {
@@ -123,27 +125,5 @@ public:
 
 private:
 	HANDLE hEvent_;
-};
-
-template <class LockType = LockCriticalSection>
-class RwLock
-{
-public:
-	RwLock(bool isWritePriority = false)
-	{
-		
-	}
-	void Rlock()
-	{
-		rlock_.Lock();
-		wlock_.Lock();
-	}
-	void Wlock()
-	{
-		wlock_.Lock();
-	}
-private:
-	LockType wlock_;
-	LockSemaphore rlock_;
 };
 #endif //__fe_lock__
