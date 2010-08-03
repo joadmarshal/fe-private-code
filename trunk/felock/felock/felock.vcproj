@@ -188,6 +188,10 @@
 				RelativePath=".\felock.h"
 				>
 			</File>
+			<File
+				RelativePath=".\feRWlock.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
