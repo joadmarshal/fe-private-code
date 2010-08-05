@@ -1,0 +1,1 @@
+"D:\Program Files\Debugging Tools for Windows (x86)\windbg.exe" -b -k com:port=\\.\pipe\com_1,baud=115200,pipe
