@@ -3,8 +3,9 @@
 
 #include "stdafx.h"
 #include "resource.h"
+#include <assert.h> 
 #define MAX_LOADSTRING 100
-#pragma comment( lib, "gdiplus.lib" ) 
+
 // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];								// The title bar text
@@ -39,7 +40,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_GUI);
-//SetLayeredWindowAttributes()
+	
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0)) 
 	{
@@ -104,10 +105,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    HWND hWnd;
 
    hInst = hInstance; // Store instance handle in our global variable
-
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+//WS_EX_LAYERED 
+//    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+//       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
 	
+   hWnd = CreateWindowEx(WS_EX_LAYERED,szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
    if (!hWnd)
    {
       return FALSE;
@@ -116,9 +119,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	SetWindowLong(hWnd,GWL_STYLE,LONGlStyle&~WS_CAPTION);
 	SetWindowPos(hWnd,NULL,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE|SWP_FRAMECHANGED);
-	
+	SetLayeredWindowAttributes(hWnd,RGB(255,255,255),255,LWA_COLORKEY);
 	HRGN hrgn = CreateRoundRectRgn(0,0,400,400,400,400);
 	SetWindowRgn(hWnd,hrgn,TRUE);
+	
+	int i = GetLastError();
 //	SetLayeredWindowAttributes
 // 	SetWindowRgn();
 // 	UpdateLayeredWindow()
