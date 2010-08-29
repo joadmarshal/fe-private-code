@@ -45,13 +45,12 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine
 	
 	hgrayMapBrush=CreateBrushIndirect(&logb);
 
-
     static TCHAR szAppName[] = TEXT ("11");
     HWND         hwnd;
     MSG          msg;
     WNDCLASSEX   wndclassex = {0};
     wndclassex.cbSize        = sizeof(WNDCLASSEX);
-    wndclassex.style         = CS_HREDRAW | CS_VREDRAW;
+    wndclassex.style         = CS_HREDRAW | CS_VREDRAW|CS_DBLCLKS;
     wndclassex.lpfnWndProc   = WndProc;
     wndclassex.cbClsExtra    = 0;
     wndclassex.cbWndExtra    = 0;
@@ -104,7 +103,8 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine
 LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL isdrawrect=FALSE;
-    HDC hdc;
+    HDC hdc,hdctemp;
+	HBITMAP hbmaptemp;
 	int mx=0;
 	int my=0;
 /*	HDC hdctemp;*/
@@ -116,9 +116,6 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			mx=LOWORD(lParam);
 			my=HIWORD(lParam);
-// 			char gg[6];
-// 			sprintf(gg,"%d",mx);
-// 			MessageBox(hwnd,gg,"",0);
 			p1.x=mx;
 			p1.y=my;
 			p2.x=mx;
@@ -130,7 +127,7 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			p2.x=LOWORD(lParam);
 			p2.y=HIWORD(lParam);
-			InvalidateRect (hwnd, NULL, TRUE) ;
+			InvalidateRect (hwnd, NULL, FALSE) ;
 		}
 		return 0 ;
 	case   WM_LBUTTONUP:
@@ -139,13 +136,28 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_CREATE:
         return 0;
-
+	
+	case WM_LBUTTONDBLCLK:
+		if(isdrawrect)
+		{
+			hdc=GetDC(hwnd);
+			hdctemp=CreateCompatibleDC(hdc);
+			hbmaptemp=CreateCompatibleBitmap(hdc,rect.right-rect.left,rect.bottom-rect.top);
+			SelectObject(hdctemp,hbmaptemp);
+			BitBlt(hdctemp,0,0,rect.right-rect.left,rect.bottom-rect.top,hdc,rect.left,rect.top,SRCCOPY);
+			OpenClipboard(hwnd) ;
+			SetClipboardData(CF_BITMAP, hbmaptemp) ;
+			CloseClipboard() ;
+			DeleteObject(hbmaptemp);
+			ReleaseDC(hwnd,hdc);
+			SendMessage(hwnd,WM_CLOSE,0,0);
+		}
+		return 0;
+	case WM_RBUTTONUP:
+		
+		return 0;
     case WM_PAINT:
         hdc = BeginPaint (hwnd, &ps);
-		//先上灰度图
-// 		BitBlt (hdc, 0, 0, nFullWidth, nFullHeight,
-// 			hdcMemugly, 0, 0, SRCCOPY);
-		//再画矩形
 		if(p1.x<=p2.x)
 		{
 			rect.left=p1.x;
@@ -167,11 +179,18 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			rect.top=p2.y;
 			rect.bottom=p1.y;
 		}
-		Rectangle(hdc,rect.left-2,rect.top-2,rect.right+2,rect.bottom+2);
+		hdctemp=CreateCompatibleDC(hdc);
+		hbmaptemp=CreateCompatibleBitmap(hdc,nFullWidth,nFullHeight);
+		SelectObject(hdctemp,hbmaptemp);
+		BitBlt(hdctemp,0,0,nFullWidth,nFullHeight,hdcMemugly,0,0,SRCCOPY);
+		Rectangle(hdctemp,rect.left-2,rect.top-2,rect.right+2,rect.bottom+2);
 		//矩形内再用原图同位置填充
-		BitBlt(hdc,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,hdcMem
+		BitBlt(hdctemp,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,hdcMem
 			,rect.left,rect.top,SRCCOPY);
 
+		BitBlt(hdc,0,0,nFullWidth,nFullHeight,hdctemp,0,0,SRCCOPY);
+		DeleteDC(hdctemp);
+		DeleteObject(hbmaptemp);
 		EndPaint (hwnd, &ps);
         return 0;
     case WM_DESTROY:
