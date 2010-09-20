@@ -1,0 +1,5 @@
+public static Database GetConfigDatabase()
+		{
+            GenericDatabase g = new GenericDatabase("Data Source=c: \\abc.mdb;Provider=Microsoft.Jet.OLEDB.4.0;", System.Data.OleDb.OleDbFactory.Instance);
+            return g;
+		}
