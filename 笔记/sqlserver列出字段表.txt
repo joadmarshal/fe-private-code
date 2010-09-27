@@ -1,0 +1,28 @@
+declare @t table(表名 varchar(100),字段名 varchar(100),数据类型 varchar(100),长度 varchar(100))
+declare @table varchar(100),@counter int,@tablecount int,@talben varchar(100),@a varchar(100),@b varchar(100),@c varchar(100),@d varchar(100),@e varchar(100)
+select @tablecount=count(name) from sysobjects where xtype='u'
+declare tablen cursor for
+select name from sysobjects where xtype ='U'
+open tablen
+set @counter=1
+while @counter<@tablecount
+begin
+  fetch next from tablen
+  into @talben
+  insert @t SELECT  表名=case when a.colorder=1 then d.name else '' end,
+字段名=a.name,
+类型=b.name,
+长度=COLUMNPROPERTY(a.id,a.name,'PRECISION')
+FROM syscolumns a
+left join systypes b on a.xtype=b.xusertype
+inner join sysobjects d on a.id=d.id  and d.xtype='U' and  d.name<>'dtproperties'
+left join syscomments e on a.cdefault=e.id
+  where d.id=object_id(@talben) 
+  order by a.id,a.colorder
+  --insert @t select @talben
+
+set @counter=@counter+1
+end
+close tablen
+deallocate tablen
+select * from @t
