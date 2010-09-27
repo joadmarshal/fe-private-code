@@ -1,28 +1,82 @@
-declare @t table(表名 varchar(100),字段名 varchar(100),数据类型 varchar(100),长度 varchar(100))
-declare @table varchar(100),@counter int,@tablecount int,@talben varchar(100),@a varchar(100),@b varchar(100),@c varchar(100),@d varchar(100),@e varchar(100)
-select @tablecount=count(name) from sysobjects where xtype='u'
-declare tablen cursor for
-select name from sysobjects where xtype ='U'
-open tablen
-set @counter=1
-while @counter<@tablecount
-begin
-  fetch next from tablen
-  into @talben
-  insert @t SELECT  表名=case when a.colorder=1 then d.name else '' end,
-字段名=a.name,
-类型=b.name,
-长度=COLUMNPROPERTY(a.id,a.name,'PRECISION')
-FROM syscolumns a
-left join systypes b on a.xtype=b.xusertype
-inner join sysobjects d on a.id=d.id  and d.xtype='U' and  d.name<>'dtproperties'
-left join syscomments e on a.cdefault=e.id
-  where d.id=object_id(@talben) 
-  order by a.id,a.colorder
-  --insert @t select @talben
+SELECT 
 
-set @counter=@counter+1
-end
-close tablen
-deallocate tablen
-select * from @t
+case   when   syscolumns.colorder=1   then   sysobjects.name   else   ''   end  AS 表名称 , 
+--sysproperties.[value] AS 表说明 ,
+syscolumns.name AS 字段名称 ,
+--properties.[value] AS 字段说明 ,
+systypes.name AS 字段类型 ,
+syscolumns.length AS 字段长度 ,
+--ISNULL(COLUMNPROPERTY(syscolumns.id, syscolumns.name,'Scale'), 0) AS 小数位数 , 
+
+CASE WHEN syscolumns.isnullable=0
+  THEN 'NOT NULL'
+ELSE ''
+END AS 是否为空 ,
+ CASE WHEN syscomments.text IS NULL
+ THEN '' ELSE syscomments.text
+END AS 缺省值 ,
+--CASE WHEN COLUMNPROPERTY(syscolumns.id, syscolumns.name, 'IsIdentity')= 1
+--THEN ' √ ' ELSE ''
+--END AS 递增字段 ,
+--CASE WHEN sysindexes.name IS NULL
+-- THEN ''
+-- ELSE sysindexes.name
+--END AS 索引名称 ,
+--CASE WHEN sysindexkeys.keyno IS NULL
+--THEN ''
+--ELSE CONVERT(VARCHAR(10),sysindexkeys.keyno )
+--END AS 索引位置 ,
+CASE WHEN sysindexes.indid=1
+ THEN ' 聚集索引 '
+WHEN sysindexes.indid>1 AND sysindexes.indid<>255
+ THEN ' 非聚集索引 '
+WHEN sysindexes.indid IS NULL
+  THEN ''
+ELSE
+ ' 其他 '
+ END AS 索引类型 ,
+CASE WHEN EXISTS
+(SELECT 1
+  FROM sysobjects
+WHERE xtype = 'PK' AND name IN
+ (SELECT name
+   FROM sysindexes
+  WHERE indid IN
+   (SELECT indid
+      FROM sysindexkeys
+     WHERE id = syscolumns.id AND colid = syscolumns.colid)))
+ THEN ' PRIMARY KEY ' ELSE ''
+ END AS 主键 ,
+CASE WHEN sysforeignkeys.constid IS NULL
+ THEN ''
+ELSE 'FOREIGN KEY REFERENCES '+
+(select sysobjects.name from sysobjects where sysobjects.id=sysforeignkeys.rkeyid) +
+'('+
+(select syscolumns.name from syscolumns where syscolumns.id=sysforeignkeys.rkeyid and syscolumns.colid = sysforeignkeys.rkey)+
+')'
+
+END AS 外健 
+FROM syscolumns                            -- 数据表字段 
+INNER JOIN sysobjects                        -- 数据对象 
+  ON sysobjects.id = syscolumns.id
+INNER JOIN systypes                         -- 数据类型 
+  ON syscolumns.xtype = systypes.xtype
+-- LEFT OUTER JOIN sysproperties properties       -- 字段属性信息 
+--  ON syscolumns.id = properties.id
+-- AND syscolumns.colid = properties.smallid
+-- LEFT OUTER JOIN sysproperties                -- 表属性信息 
+--  ON sysobjects.id = sysproperties.id
+-- AND sysproperties.smallid = 0
+ LEFT OUTER JOIN syscomments                -- 注释信息 
+  ON syscolumns.cdefault = syscomments.id
+ LEFT OUTER JOIN sysindexkeys                -- 索引中的键或列的信息 
+  ON sysindexkeys.id = syscolumns.id
+ AND sysindexkeys.colid = syscolumns.colid
+LEFT OUTER JOIN sysindexes                  -- 数据库 索引表 
+  ON sysindexes.id = sysindexkeys.id
+  AND sysindexes.indid = sysindexkeys.indid
+LEFT OUTER JOIN sysforeignkeys
+  ON sysforeignkeys.fkeyid = syscolumns.id
+ AND sysforeignkeys.fkey = syscolumns.colid
+ WHERE (sysobjects.xtype = 'U')
+order by sysobjects.id,syscolumns.colid
