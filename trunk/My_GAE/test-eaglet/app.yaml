@@ -4,8 +4,11 @@ runtime: python
 api_version: 1
 
 handlers:
-- url: /jquery
-  static_dir: jquery
+- url: /lib
+  static_dir: lib
+
+- url: /style
+  static_dir: style
   
 - url: .*
   script: main.py
