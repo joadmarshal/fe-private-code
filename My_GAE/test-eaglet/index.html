@@ -1,25 +1,14 @@
 <html>
 	<head>
-	<link href="/style/mainstyle.css" type="text/css" rel="stylesheet" />
+	<link href="/stylesheets/mainstyle.css" type="text/css" rel="stylesheet" />
 	<script src="/lib/jquery.js" type="text/javascript"></script>
+	<script src="/javascripts/behavior.js" type="text/javascript"></script>
 	</head>
-  <body>
-    {% for greeting in greetings %}
-      {% if greeting.author %}
-        <b>{{ greeting.author.nickname }}</b> wrote:
-      {% else %}
-       An anonymous person wrote:
-      {% endif %}
-      <blockquote>{{ greeting.content|escape }}</blockquote>
-    {% endfor %}
-
-    <form action="/sign" method="post">
-      <div><textarea name="content" rows="3" cols="60"></textarea></div>
-      <div><input type="submit" value="Sign Guestbook"></div>
-    </form>
-
-    <a href="{{ url }}">{{ url_linktext }}</a>
-
+  	<body>
+    	<div id="header">家园中文网站长站演示文档</div>
+    	<div id="main">
+  		</div>
+		<div id="footer">这里是foot部分，放置版权啥的</div>
+		<input id="setheader" type="button" value="试试" />
   </body>
-
 </html>

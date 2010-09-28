@@ -1,0 +1,6 @@
+body{margin:0 auto;font-size:12pt;font-color:red;background:white;text-align:center;}
+
+#header{margin:0 auto;background:black;width:800px;height:100px;text-align:center;}
+#main {margin:0 auto;background:blue;width:800px;height:800px;text-align:center;}
+#footer{margin:0 auto;width:800px;height:40px;background:#fff000;}
+
