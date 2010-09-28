@@ -17,4 +17,4 @@ handlers:
   static_dir: stylesheets
   
 - url: .*
-  script: main.py
+  script: index.py

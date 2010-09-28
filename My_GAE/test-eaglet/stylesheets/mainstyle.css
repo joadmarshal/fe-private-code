@@ -1,6 +1,58 @@
-body{margin:0 auto;font-size:12pt;font-color:red;background:white;text-align:center;}
+/*body{margin:0 auto;font-size:12pt;font-color:red;background:white;text-align:center;}*/
 
-#header{margin:0 auto;background:black;width:800px;height:100px;text-align:center;}
-#main {margin:0 auto;background:blue;width:800px;height:800px;text-align:center;}
-#footer{margin:0 auto;width:800px;height:40px;background:#fff000;}
+body { font-family:Verdana; font-size:14px; margin:0;}
+
+#container {margin:0 auto; width:900px;}
+#header { margin:0;height:100px; background:#6cf}
+/*#menu { margin:0;height:20px; background:#09c;}*/
+#mainContent { height:500px;}
+#sidebar { float:right; width:200px; height:500px; background:#9ff;}
+#content { float:left; width:695px; height:500px; background:#cff;}/*因为是固定宽度，采用左右浮动方法可有效避免ie 3像素bug*/
+
+
+#footer{margin:0 auto;height:40px;background:#fff000;}
+
+
+/*mene css*/
+#menu {
+	background:#45A8DF;
+    height: 45px;
+	display: block;
+}
+#menu ul{ 
+    list-style: none;
+	padding: 0;
+	margin: 0;
+}
+#menu ul li{ 
+    float: left;
+	/* 菜单子元素的内容超出不可见 */
+	overflow: hidden;
+	position: relative;
+	text-align: center;
+	line-height: 45px;
+}
+#menu ul li a {
+    background:#45A8DF;
+	color:#FFF;
+    /* 必须是相对定位  */
+	position: relative;
+	display: block;
+	width: 110px;
+	height: 45px;
+	font-family: Arial;
+	font-size: 11px;
+	font-weight: bold;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+#menu ul li a span {
+	/* 所有层将使用绝对定位 */
+	position: absolute;
+	left: 0;
+	width: 110px;
+}
 
