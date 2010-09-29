@@ -5,13 +5,7 @@ import cgi
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
-from google.appengine.ext import db
-
-class Greeting(db.Model):
-  author = db.UserProperty()
-  content = db.StringProperty(multiline=True)
-  date = db.DateTimeProperty(auto_now_add=True)
-  haha = db.StringProperty(multiline=True)
+from model import *
 
 class MainPage(webapp.RequestHandler):
   def get(self):
@@ -35,20 +29,14 @@ class MainPage(webapp.RequestHandler):
     self.response.out.write(template.render(path, template_values))
 
 class Guestbook(webapp.RequestHandler):
-  def post(self):
-    greeting = Greeting()
-
-    if users.get_current_user():
-      greeting.author = users.get_current_user()
-
-    greeting.content = self.request.get('content')
-    greeting.haha = 'new'
-    greeting.put()
-    self.redirect('/')
+  def get(self):
+    template_values = {}
+    path = os.path.join(os.path.dirname(__file__), 'Guestbook.html')
+    self.response.out.write(template.render(path, template_values))
 
 application = webapp.WSGIApplication(
                                      [('/', MainPage),
-                                      ('/sign', Guestbook)],
+                                      ('/Guestbook', Guestbook)],
                                      debug=True)
 
 def main():
