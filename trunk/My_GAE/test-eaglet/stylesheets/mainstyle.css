@@ -1,4 +1,4 @@
-/*body{margin:0 auto;font-size:12pt;font-color:red;background:white;text-align:center;}*/
+﻿/*body{margin:0 auto;font-size:12pt;font-color:red;background:white;text-align:center;}*/
 
 body { font-family:Verdana; font-size:14px; margin:0;}
 
@@ -16,7 +16,7 @@ body { font-family:Verdana; font-size:14px; margin:0;}
 /*mene css*/
 #menu {
 	background:#45A8DF;
-    height: 45px;
+    	height: 45px;
 	display: block;
 }
 #menu ul{ 
@@ -33,8 +33,8 @@ body { font-family:Verdana; font-size:14px; margin:0;}
 	line-height: 45px;
 }
 #menu ul li a {
-    background:#45A8DF;
-	color:#FFF;
+        background:#45A8DF;
+	color:#ffffff;
     /* 必须是相对定位  */
 	position: relative;
 	display: block;
@@ -55,4 +55,13 @@ body { font-family:Verdana; font-size:14px; margin:0;}
 	left: 0;
 	width: 110px;
 }
+
+.menuover{
+	
+}
+
+.menuout{
+	color:#FFF;
+}
+
 
