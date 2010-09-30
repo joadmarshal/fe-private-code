@@ -2,11 +2,18 @@
 	<head>
 	<link href="/stylesheets/mainstyle.css" type="text/css" rel="stylesheet" />
 	<script src="/lib/jquery.js" type="text/javascript"></script>
-	<script src="/javascripts/behavior.js" type="text/javascript"></script>
+	<script src="/javascripts/GuestBook.js" type="text/javascript"></script>
 	</head>
   	<body>
-		<div class=GuestBook>
+		<div id="GuestBook" class="GuestBook">
 			
 		</div>
+    	<form action="/PutGuestBook" method="post">
+      		<div><textarea name="content" rows="3" cols="60"></textarea></div>
+      		<div><input type="submit" value="Sign Guestbook"></div>
+    	</form>
   	</body>
+<script>
+$("#GuestBook").load("GetGuest");
+</script>
 </html>
