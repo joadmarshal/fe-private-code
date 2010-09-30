@@ -1,8 +1,8 @@
 $(document).ready(function(){
 	$("#menu ul a").each(function(){
 		$(this).click(function(){
-//			var html = $(this).attr("href");
-			$("#content").load("http://localhost:8083/");
+			var html=$(this).attr("href");
+			$("#content").load(html);
 			return false;
 		})
         	$(this).hover(
