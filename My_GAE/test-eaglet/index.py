@@ -37,7 +37,7 @@ class PutGuestBook(webapp.RequestHandler):
 
     greeting.content = self.request.get('content')
     greeting.put()
-    self.redirect('/')
+    self.redirect('/GetGuest')
     
 class GuestBook(webapp.RequestHandler):
   def get(self):
@@ -49,20 +49,28 @@ class GetGuest(webapp.RequestHandler):
   def get(self):
     greetings_query = Greeting.all().order('-date')
     greetings = greetings_query.fetch(10)
-    rp = ""
+    rp = "" 
     for greeting in greetings:
       if greeting.author:
         rp += "<div class='guestname'>" + greeting.author.nickname + "</div>"
       else:
         rp += "<div class='guestname'>An anonymous person</div>"
-      rp += "<div class='guestcontent'>" + greeting.content +"</div>"
+      content = greeting.content.replace("<","&lt;").replace(">","&gt;")
+      rp += "<div class='guestcontent'>" + content +"</div>"
     self.response.out.write(rp)
+    
+class MyInformation(webapp.RequestHandler):
+  def get(self):
+    template_values = {}
+    path = os.path.join(os.path.dirname(__file__), 'MyInformation.html')
+    self.response.out.write(template.render(path, template_values))
 
 application = webapp.WSGIApplication(
                                      [('/', MainPage),
                                       ('/GuestBook', GuestBook),
                                       ('/GetGuest', GetGuest),
-                                      ('/PutGuestBook', PutGuestBook)
+                                      ('/PutGuestBook', PutGuestBook),
+                                      ('/MyInformation', MyInformation)
                                       ],
                                      debug=True)
 

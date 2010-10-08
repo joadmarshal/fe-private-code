@@ -2,7 +2,8 @@ $(document).ready(function(){
 	$("#menu ul a").each(function(){
 		$(this).click(function(){
 			var html=$(this).attr("href");
-			$("#content").load(html);
+			$("#content").attr({src:html});
+			//อัต๔<html>
 			return false;
 		})
         	$(this).hover(
