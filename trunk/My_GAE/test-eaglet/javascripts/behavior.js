@@ -2,7 +2,9 @@ $(document).ready(function(){
 	$("#menu ul a").each(function(){
 		$(this).click(function(){
 			var html=$(this).attr("href");
+			$("#content").fadeOut(0);
 			$("#content").attr({src:html});
+			$("#content").fadeIn(500);
 			//อัต๔<html>
 			return false;
 		})
