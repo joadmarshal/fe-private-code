@@ -19,4 +19,5 @@ std::string GetFileDirA(LPCSTR filePath);
 BOOL ReadReg(TCHAR	*sKey, BYTE	*pBuffer,	DWORD	dwBufSize,HKEY	hkey, TCHAR	*sSubKey, DWORD	ulType);
 BOOL RegistryGetValue(HKEY hk, const TCHAR * pszKey, const TCHAR * pszValue, DWORD dwType, LPBYTE data, DWORD dwSize);
 DWORD SystemTimeToTime_t(const  SYSTEMTIME *st, time_t *pt );
+void GetExitWindowsRight();
 #endif
