@@ -1,0 +1,6 @@
+1.在“我的电脑”中找到Windows系统目录下INF文件夹中的MDAC.INF文件，在其上点击右键，在弹出的菜单中选择“安装”，当提示定位文件时，您可以先将其指向windows\servicepackfiles\i386，当需要XP的CD时，指向XP的安装盘上的\i386文件夹即可。(如果您的XP安装包中包括了SP2，您可以直接指向XP的安装盘上的i386文件夹就可以了。如果您的SP2是从网上升级的，可能需要先指向C:\windows\servicepackfiles\i386文件夹，此处假定您的XP安装在C:\windows文件夹下)。
+
+
+
+2.在C盘搜索SQLOLEDB,一般"C:\Program Files\Common Files\System\Ole DB"里有
+(就是代码里的Provider),然后注册dll
