@@ -1,0 +1,1 @@
+sc create runsys  binpath= "cmd /k start" type= own type= interact
