@@ -1,7 +1,7 @@
 #include "fesocketlib.h"
 
 
-fe_Cpio_Reactor *cpioRt;
+//fe_Cpio_Reactor *cpioRt;
 struct MyOVERLAPPED
 {
 	MyOVERLAPPED()
@@ -18,13 +18,13 @@ struct MyOVERLAPPED
 bool handle_recv(LPOVERLAPPED lpOverlapped)
 {
 	MyOVERLAPPED *myovlp=(MyOVERLAPPED *)lpOverlapped;
-	delete cpioRt;
+//	delete cpioRt;
 	return true;
 }
 
 int main()
 {
-	cpioRt=new fe_Cpio_Reactor();
+	//cpioRt=new fe_Cpio_Reactor();
 	fesl::initsocketlib();
 	fesl::Inet_addr addr(0,1656);
 
@@ -39,7 +39,7 @@ int main()
 
 		
 
-		cpioRt->regedit_handler((HANDLE)saccept,handle_recv);
+		//cpioRt->regedit_handler((HANDLE)saccept,handle_recv);
 
 		DWORD Flags=0;
 		DWORD RecvBytes;

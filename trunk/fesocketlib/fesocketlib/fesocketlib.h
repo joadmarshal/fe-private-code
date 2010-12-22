@@ -35,6 +35,7 @@ namespace fesl
 		int ret = bind(sk,addr,sizeof(sockaddr_in));
 		if(ret == SOCKET_ERROR)
 			throw std::exception("bind error");
+		return ret;
 	}
 
 	inline int felisten(SOCKET sk,int backlog)
@@ -42,6 +43,7 @@ namespace fesl
 		int ret = listen(sk, backlog);
 		if(ret == SOCKET_ERROR)
 			throw std::exception("listen error");
+		return ret;
 	}
 
 	inline SOCKET feListenAddr(sockaddr *addr)
