@@ -8,13 +8,13 @@ namespace fesl
 			ZeroMemory(&__sockaddr,sizeof(__sockaddr));
 			__sockaddr.sin_family=AF_INET;
 		}
-		Inet_addr(const char *str_ip,unsigned short port)
+		Inet_addr(unsigned short port,const char *str_ip=0)
 		{
 			ZeroMemory(&__sockaddr,sizeof(__sockaddr));
 			__sockaddr.sin_family=AF_INET;
-			set(str_ip,port);
+			set(port,str_ip);
 		}
-		sockaddr_in & set(const char *str_ip,unsigned short port)
+		sockaddr_in & set(unsigned short port,const char *str_ip=0)
 		{
 			if(str_ip)
 				__sockaddr.sin_addr.s_addr = inet_addr(str_ip);
