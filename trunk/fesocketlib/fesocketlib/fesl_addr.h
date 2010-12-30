@@ -14,6 +14,10 @@ namespace fesl
 			__sockaddr.sin_family=AF_INET;
 			set(port,str_ip);
 		}
+		Inet_addr(sockaddr_in *addr)
+		{
+			__sockaddr=*addr;
+		}
 		sockaddr_in & set(unsigned short port,const char *str_ip=0)
 		{
 			if(str_ip)
@@ -25,7 +29,5 @@ namespace fesl
 		}
 	private:
 		sockaddr_in __sockaddr;
-// 	public:
-// 	static const int addrsize = sizeof(sockaddr_in);
 	};
 }

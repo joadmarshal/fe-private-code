@@ -1,9 +1,9 @@
 //
+#pragma warning(disable: 4786)
 #include <windows.h>
 #include <process.h>
 #include <map>
 #include <exception>
-
 class IHandleIocp
 {
 public:
@@ -49,7 +49,7 @@ public:
 
 	bool PostStatus(HANDLE sk,DWORD dwBytesTransferred,LPOVERLAPPED lpOverlapped)
 	{
-		return (bool)PostQueuedCompletionStatus(m_hCompletionPort,dwBytesTransferred,(unsigned long)sk,lpOverlapped);
+		return PostQueuedCompletionStatus(m_hCompletionPort,dwBytesTransferred,(unsigned long)sk,lpOverlapped)?true:false;
 	}
 private:
 	void startrun(DWORD numberOfThread)
