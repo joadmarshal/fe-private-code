@@ -5,7 +5,7 @@
 #pragma comment(lib,"Ws2_32.lib")
 #include "fesl_addr.h"
 #include "fe_reactor.h"
-
+#include "fesl_socket.h"
 namespace fesl
 {
 
