@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "feFramWork", "feFramWork\feFramWork.vcxproj", "{96B98979-EE98-4175-8EDB-6656112ACE2A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "feFrameWorkLib", "feFrameWorkLib\feFrameWorkLib.vcxproj", "{7C259D66-9140-46D2-9427-024EED7E83FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{96B98979-EE98-4175-8EDB-6656112ACE2A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{96B98979-EE98-4175-8EDB-6656112ACE2A}.Debug|Win32.Build.0 = Debug|Win32
+		{96B98979-EE98-4175-8EDB-6656112ACE2A}.Release|Win32.ActiveCfg = Release|Win32
+		{96B98979-EE98-4175-8EDB-6656112ACE2A}.Release|Win32.Build.0 = Release|Win32
+		{7C259D66-9140-46D2-9427-024EED7E83FC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7C259D66-9140-46D2-9427-024EED7E83FC}.Debug|Win32.Build.0 = Debug|Win32
+		{7C259D66-9140-46D2-9427-024EED7E83FC}.Release|Win32.ActiveCfg = Release|Win32
+		{7C259D66-9140-46D2-9427-024EED7E83FC}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
