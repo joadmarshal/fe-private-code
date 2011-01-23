@@ -126,4 +126,8 @@ public:
 private:
 	HANDLE hEvent_;
 };
+
+typedef TLocker<LockCriticalSection> CSLocker;
+typedef TLocker<LockSemaphore> SemaphoreLocker;
+typedef TLocker<LockEvent> EventLocker;
 #endif //__fe_lock__
