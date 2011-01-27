@@ -1,0 +1,25 @@
+pydev - http://pydev.org/updates
+PyDev 安装和配置
+安装 PyDev
+在安装 PyDev 之前，要保证您已经安装了 Java 1.4 或更高版本、Eclipse 以及 Python。接下来，开始安装 PyDev 插件。
+启动 Eclipse，利用 Eclipse Update Manager 安装 PyDev。在 Eclipse 菜单栏中找到 Help栏，选择 Help > Software Updates > Find and Install。
+选择 Search for new features for install，然后单击 Next。在显示的窗口中，选择 new remote site。此时，会弹出一个对话框，要求输入新的更新站点的名称和链接。这里，名称项输入 PyDev，当然，您也可以输入其他的名称；链接里输入http://www.fabioz.com/pydev/updates，如果Eclipse报版本过低的错可以填写这个地址进行安装http://pydev.sourceforge.net/updates。然后，单击 Ok。
+ 
+      将PyDev的内容都勾选。。。。。进行安装
+ 
+      
+      验证是否成功安装 PyDev
+      如何才能验证 Eclipse Update Manager 是否已经成功安装了所需的 PyDev 插件了呢？
+      选择 Help->About Eclipse SDK->Plug-in Details，将会出现 About Eclipse SDK Plug-ins 窗口，该窗口里列出了所有已经安装了的 Eclipse 插件。检查一下在 Plug-in Id 一栏中是否至少有五个以上分别以 com.python.pydev 和 org.python.pydev 开头的插件。如果是，那么 PyDev已经被成功安装，否则，安装出了一些问题，需要根据具体问题来做具体的分析。
+ 
+ 
+      配置 PyDev
+      安装好 PyDev 之后，需要配置 Python/Jython 解释器，配置过程很简单。
+      在 Eclipse 菜单栏中，选择 Window > Preferences > Pydev > Interpreter - (Python/Jython)，在这里配置 Python/Jython 解释器，下面以 Python 为例介绍如何配置。
+      首先需要添加已安装的解释器。这里，Python 安装在 C:\Python31 路径下。单击 New，选择 Python 解释器 python.exe，打开后显示出一个包含很多复选框的窗口，选择需要加入系统 PYTHONPATH 的路径，单击 Ok。
+ 
+ 
+接下来，检查一下配置的结果是否正确。
+在 System PYTHONPATH 里，检查是否包含配置过程中加入的那些路径。这里列出了所有的系统所需的库文件夹。
+另外，在 Forced builtin libs 里，列出了 Python 的内置库。对于 Python 而言，这样的内置库大约有50个，而对于 Jython 来说，则有30个左右。
+这样，Python 解释器就配置好了。
