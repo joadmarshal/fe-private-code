@@ -1,0 +1,85 @@
+"C:\Program Files\Debugging Tools for Windows (x86)\windbg.exe" -k com:pipe,port=\\.\pipe\com_1,baud=115200  -y E:\SourceCode\eposfsf\sys\objfre_wnet_x86\i386 -srcpath E:\SourceCode\eposfsf\sys
+
+
+1. windbg.exe 快捷方式的目标设置为：
+   "D:\Common Tools\Debugging Tools for Windows\windbg.exe" 
+   -k com:pipe,port=\\.\pipe\com_1,baud=115200 
+   -y D:\code\vc6\DriverDev\MyDriver_Check
+   -srcpath D:\code\vc6\DriverDev
+   
+2. 虚拟机设置
+   选中Use named pipe:
+   \\.\pipe\com_1
+   This end is the server.
+   The other end is a virtual machine.
+   
+3. 修改BOOT.INI   
+[boot loader]
+timeout=30
+default=multi(0)disk(0)rdisk(0)partition(1)\WINDOWS
+[operating systems]
+multi(0)disk(0)rdisk(0)partition(1)\WINDOWS="Windows Server 2003, Standard" /debug /debugport=COM1 /baudrate=115200    (COM1不能乱改，跟新建的com口不同)
+   
+4. vista
+
+   bcdedit /dbgsettings serial baudrate:115200 debugport:1 /debug on
+   
+驱动安装 	rundll32.exe setupapi,InstallHinfSection DefaultInstall 132 c:\eposdf.inf
+驱动卸载	rundll32.exe setupapi,InstallHinfSection DefaultUninstall 132 c:\eposdf.inf
+   
+   
+5. 1: kd> !lmi tdifw_drv.sys查看DMP文件对应驱动的时间。
+
+
+
+srv*D:\Symbols*http://msdl.microsoft.com/download/symbols;D:\Symbols;
+
+SRV*D:\Symbols\*http://msdl.microsoft.com/download/symbols
+
+驱动堆栈限制：
+http://www.microsoft.com/whdc/driver/tips/kmstack.mspx
+http://www.debugman.com/read.php?tid=4412
+
+
+
+prefast build -cZ
+prefast view
+
+
+////////////////////////////
+ .kdfiles c:\abc.ini
+
+map
+\Systemroot\system32\drivers\eposfsf.sys
+F:\6692\eposfsf\sys\objchk_wnet_x86\i386\eposfsf.sys
+////////////////////////////
+
+F:\6692\eposfsf\sys\objchk_wnet_amd64\amd64\eposfsf.sys
+
+F:\6692\eposdf\driver\objchk_wnet_amd64\amd64\eposdf.sys
+
+
+
+
+
+
+#define XP_2K_BASE_PROCESS_PEB_OFFSET			0x01B0
+#define W2003_BASE_PROCESS_PEB_OFFSET			0x0190
+#define W2003_BASE_PROCESS_PEB_OFFSET_SP1		0x01A0
+#define VISTA_BASE_PROCESS_PEB_OFFSET			0x0188
+#define W7_BASE_PROCESS_PEB_OFFSET				0x01A8
+
+
+#define W2003_BASE_PROCESS_PEB_OFFSET_64		0x02C0
+#define VISTA_BASE_PROCESS_PEB_OFFSET_64		0x0290
+#define W7_BASE_PROCESS_PEB_OFFSET_64			0x0338
+windows 2008 SP1 + SP2 64BIT   0x1B0      6.0
+windows 2008 32bit             0x188
+
+
+
+
+
+
+
+
