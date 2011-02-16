@@ -1,0 +1,1 @@
+select * from (select row_number() over(PARTITION BY assetid order by CreateTime desc) as rid,* from dbo.tbl_infoindex) as tb where rid >5

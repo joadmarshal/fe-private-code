@@ -1,0 +1,1 @@
+1.getText返回有可能为空．直接赋值给std::string 会出错
