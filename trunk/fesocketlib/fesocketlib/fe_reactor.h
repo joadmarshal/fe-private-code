@@ -1,10 +1,13 @@
-//
+<<<<<<< .mine#ifndef _FE_FESL__CPIO_REACTOR
+#define _FE_FESL__CPIO_REACTOR
+=======//
 #pragma warning(disable: 4786)
 #include <windows.h>
 #include <process.h>
 #include <map>
 #include <exception>
-class IHandleIocp
+>>>>>>> .theirs<<<<<<< .mine#endif
+=======class IHandleIocp
 {
 public:
 	virtual void HandleIocp(LPOVERLAPPED lpOverlapped,DWORD dwBytesTransferred)=0;
@@ -153,3 +156,4 @@ private:
 
 };
 
+>>>>>>> .theirs
