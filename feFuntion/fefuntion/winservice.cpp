@@ -1,37 +1,15 @@
 #include "WinService.h"
 #include <stdio.h>
 #include <stdarg.h>
-BOOL WinService::startservice(int argc, char* argv[])
+BOOL WinService::startservice(char *servicename)
 {
-	if ( (argc > 1) &&
-		((*argv[1] == '-') || (*argv[1] == '/')) )
-	{
-		
-		if ( _stricmp( "install", argv[1]+1 ) == 0 )
-		{
-			return Install();
-		}
-		else if ( _stricmp( "remove", argv[1]+1 ) == 0 )
-		{
-			return Uninstall();
-		}
-		else if ( _stricmp( "debug", argv[1]+1 ) == 0 )
-		{
-			//调试运行
-			_service->run();
-			return TRUE;
-		}
-		else
-		{
-			
-		}
-		
-	}
+	ZeroMemory(_servername,sizeof(_servername));
+	ZeroMemory(_serverdisplayname,sizeof(_serverdisplayname));
+	ZeroMemory(_serviceDescription,sizeof(_serviceDescription));
+	strncpy(_servername,servicename,sizeof(_servername)-1);
 	//注册服务
-	_st[0].lpServiceName=_servername;
-	_st[0].lpServiceProc=(LPSERVICE_MAIN_FUNCTION)_ServiceMain;
-	
-	
+	SERVICE_TABLE_ENTRY _st[2]={_servername,(LPSERVICE_MAIN_FUNCTION)ServiceMain,NULL,NULL};	
+
 	_hServiceStatus = NULL;
 	_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
 	_status.dwCurrentState = SERVICE_STOPPED;
@@ -48,7 +26,12 @@ BOOL WinService::startservice(int argc, char* argv[])
 	}
 	return TRUE;
 }
-
+BOOL WinService::debugservice()
+{
+	_isdebug=TRUE;
+	_service->run();
+	return TRUE;
+}
 BOOL WinService::stopservice()
 {
 	if(this->OnStop())
@@ -61,10 +44,14 @@ BOOL WinService::stopservice()
 
 void WinService::run()//主线程持续等待
 {
-	if(!OnStart())
-		return;
+	for (std::list<pOnStart>::iterator ite=_onstartfunlist.begin();ite != _onstartfunlist.end();++ite)
+	{
+		if(!(*ite)())
+			return;
+	}
+	
 	_hStopEvent_Winservice = CreateEvent(NULL, TRUE, FALSE, NULL);
-	LogEvent("%s start",_servername);
+	LogEvent("server start");
 	DWORD dwRet;
 	dwRet = WaitForSingleObject(_hStopEvent_Winservice, INFINITE);
 	switch( dwRet )
@@ -174,60 +161,70 @@ BOOL WinService::Uninstall()
 	return FALSE;
 }
 
-void WINAPI WinService::_ServiceMain(
+void WINAPI WinService::ServiceMain(
 								DWORD dwArgc,     // number of arguments
 								LPTSTR *lpszArgv  // array of arguments
 								)
 {
-	_status.dwCurrentState = SERVICE_START_PENDING;
-	_status.dwControlsAccepted = SERVICE_ACCEPT_STOP;
+	WinService *sv = &WinService::GetService();
 	
-	_hServiceStatus = RegisterServiceCtrlHandler(_servername, _ServiceStrl);
+	sv->_status.dwCurrentState = SERVICE_START_PENDING;
+	sv->_status.dwControlsAccepted = SERVICE_ACCEPT_STOP;
 	
-	SetServiceStatus(_hServiceStatus, &_status);
+	sv->_hServiceStatus = RegisterServiceCtrlHandler(sv->_servername, ServiceStrl);
 	
-	_status.dwWin32ExitCode = S_OK;
-	_status.dwCheckPoint = 0;
-	_status.dwWaitHint = 0;
-	_status.dwCurrentState = SERVICE_RUNNING;
-	SetServiceStatus(_hServiceStatus, &_status);
+	SetServiceStatus(sv->_hServiceStatus, &sv->_status);
 	
-	_service->run();
+	sv->_status.dwWin32ExitCode = S_OK;
+	sv->_status.dwCheckPoint = 0;
+	sv->_status.dwWaitHint = 0;
+	sv->_status.dwCurrentState = SERVICE_RUNNING;
+	SetServiceStatus(sv->_hServiceStatus, &sv->_status);
 	
-	_status.dwCurrentState = SERVICE_STOPPED;
-	SetServiceStatus(_hServiceStatus, &_status);
+	sv->_service->run();
+	
+	sv->_status.dwCurrentState = SERVICE_STOPPED;
+	SetServiceStatus(sv->_hServiceStatus, &sv->_status);
 }
 
 void WinService::LogEvent(LPCTSTR pFormat, ...)
 {
-	TCHAR    chMsg[256];
+	TCHAR    chMsg[2560];
 	HANDLE  hEventSource;
 	LPTSTR  lpszStrings[1];
 	va_list pArg;
-	
+	WinService *sv = &WinService::GetService();
 	va_start(pArg, pFormat);
 	vsprintf(chMsg, pFormat, pArg);
 	va_end(pArg);
 	
 	lpszStrings[0] = chMsg;
-	
-	hEventSource = RegisterEventSource(NULL, _servername);
-	if (hEventSource != NULL)
+	if(_isdebug)
 	{
-		ReportEvent(hEventSource, EVENTLOG_INFORMATION_TYPE, 0, 0, NULL, 1, 0, (LPCTSTR*) &lpszStrings[0], NULL);
-		DeregisterEventSource(hEventSource);
+		printf("%s\n",chMsg);
 	}
+	else
+	{
+		hEventSource = RegisterEventSource(NULL, sv->_servername);
+		if (hEventSource != NULL)
+		{
+			ReportEvent(hEventSource, EVENTLOG_INFORMATION_TYPE, 0, 0, NULL, 1, 0, (LPCTSTR*) &lpszStrings[0], NULL);
+			DeregisterEventSource(hEventSource);
+		}
+	}
+	
 }
 
-void WINAPI WinService::_ServiceStrl(DWORD dwOpcode)
+void WINAPI WinService::ServiceStrl(DWORD dwOpcode)
 {
+	WinService *sv = &WinService::GetService();
 	switch (dwOpcode)
 	{
 	case SERVICE_CONTROL_STOP:
 		if(_service->stopservice())
 		{
-			_status.dwCurrentState = SERVICE_STOP_PENDING;
-			SetServiceStatus(_hServiceStatus, &_status);
+			sv->_status.dwCurrentState = SERVICE_STOP_PENDING;
+			SetServiceStatus(sv->_hServiceStatus, &sv->_status);
 		}
 		break;
 	case SERVICE_CONTROL_PAUSE:
@@ -239,16 +236,18 @@ void WINAPI WinService::_ServiceStrl(DWORD dwOpcode)
 	case SERVICE_CONTROL_SHUTDOWN:
 		break;
 	default:
-		LogEvent("Bad service request");
+		RaiseException(0, 0, 0, NULL);
+		sv->LogEvent("Bad service request");
 	}
 }
 
+void WinService::ReleaseService()
+{
+	delete _service;
+}
+
+void WinService::regeditOnStartFun(pOnStart pfun)
+{
+	_onstartfunlist.push_back(pfun);
+}
 WinService *WinService::_service=NULL;
-char WinService::_servername[1024]={"fuckservice"};
-char WinService::_serverdisplayname[1024]={"fuckservice"};
-char WinService::_serviceDescription[1024]={"fuckservice"};
-SERVICE_TABLE_ENTRY WinService::_st[2]={WinService::_servername,WinService::_ServiceMain,NULL,NULL};
-SERVICE_STATUS WinService::_status={0,0,0,0,0,0,0};
-SERVICE_STATUS_HANDLE WinService::_hServiceStatus=0;
-BOOL WinService::_bInstall=FALSE;
-DWORD WinService::_dwThreadID=0;
