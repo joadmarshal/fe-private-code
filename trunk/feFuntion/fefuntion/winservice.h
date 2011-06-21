@@ -1,57 +1,65 @@
-#ifndef		__WinService__
-#define		__WinService__
+#ifndef		__FE_WinService__
+#define		__FE_WinService__
 #include <windows.h>
+#include <list>
+typedef BOOL (*pOnStart)();
 class WinService
 {
 public:
-	WinService(char *servicename,char *displayname,char *description)
+	static WinService & GetService() 
 	{
-		if(_service==NULL)
+		if(!_service)
 		{
-			_service=this;
-			strncpy(_servername,servicename,1024);
-			strncpy(_serverdisplayname,displayname,1024);
-			strncpy(_serviceDescription,description,1024);
+			_service = new WinService(); 
+			atexit(ReleaseService);
 		}
-	}
-	BOOL startservice(int argc, char* argv[]);
+		return *_service;
+	};
+	void setDisplayname(const char *szdisplayname){strncpy(_serverdisplayname,szdisplayname,sizeof(_serviceDescription)-1);}
+	void setDescription(const char *szdescription){strncpy(_serviceDescription,szdescription,sizeof(_serviceDescription)-1);}
+	BOOL startservice(char *servicename);//正常启动服务
+	BOOL debugservice();//调试时，窗口方式启动
 	BOOL stopservice();
-	~WinService()
-	{
-		if(_service==this)
-		{
-			_service=NULL;
-		}
-	}
-	virtual BOOL OnStop() {return TRUE;}
-	virtual BOOL OnStart() {return TRUE;}
-	static WinService *GetService() {return _service;};
+
+	void regeditOnStartFun(pOnStart pfun); 
 protected:
-	static void LogEvent(LPCTSTR pFormat, ...);
+
+	BOOL OnStop() {return TRUE;}
+	BOOL OnStart() {return TRUE;}
+
+protected:
+	static void ReleaseService();
+	WinService(){}
+
+	~WinService(){}
+
+	void LogEvent(LPCTSTR pFormat, ...);
 private:
 
 	void run();//主线程持续等待
 	BOOL Install();
 	BOOL IsInstalled();
 	BOOL Uninstall();
-	static void WINAPI _ServiceMain(
+
+	static void WINAPI ServiceMain(
 								DWORD dwArgc,     // number of arguments
 								LPTSTR *lpszArgv  // array of arguments
 								);	
-	static void WINAPI _ServiceStrl(DWORD dwOpcode);
+	static void WINAPI ServiceStrl(DWORD dwOpcode);
 	
-
 private:
+	std::list<pOnStart> _onstartfunlist;
 	HANDLE _hStopEvent_Winservice;
-	static char _servername[];
-	static char _serverdisplayname[];
-	static char _serviceDescription[];
-	static SERVICE_TABLE_ENTRY _st[2];
+	char _servername[50];
+	char _serverdisplayname[50];
+	char _serviceDescription[100];
+	SERVICE_STATUS _status;
+	SERVICE_STATUS_HANDLE _hServiceStatus;
+	BOOL _bInstall;
+	BOOL _isdebug;
+	DWORD _dwThreadID;
+//唯一一个实例
 	static WinService *_service;
-	static SERVICE_STATUS _status;
-	static SERVICE_STATUS_HANDLE _hServiceStatus;
-	static BOOL _bInstall;
-	static DWORD _dwThreadID;
 };
 #endif
 
