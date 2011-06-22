@@ -175,6 +175,18 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\fecpioreactor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\fesocketlib.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\fetcpsession.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
@@ -185,7 +197,27 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\fe_buff.h"
+				>
+			</File>
+			<File
+				RelativePath=".\fe_IHandle.h"
+				>
+			</File>
+			<File
 				RelativePath=".\fe_reactor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\fe_tcplisten.h"
+				>
+			</File>
+			<File
+				RelativePath=".\fecpioreactor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\fesl.h"
 				>
 			</File>
 			<File
@@ -193,7 +225,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\feSocket.h"
+				>
+			</File>
+			<File
 				RelativePath=".\fesocketlib.h"
+				>
+			</File>
+			<File
+				RelativePath=".\fetcpmanger.h"
+				>
+			</File>
+			<File
+				RelativePath=".\fetcpsession.h"
 				>
 			</File>
 		</Filter>
