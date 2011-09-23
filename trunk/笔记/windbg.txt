@@ -1,1 +1,232 @@
 srv*E:\symbols*http://msdl.microsoft.com/download/symbols  设置自动下载,
+
+
+dds 命令跟 x 命令相反，dds 把某一个地址对应到符号。当看到某一些数据怀疑可能对应到
+符号的时候，可以用这个命令。 比如要看看当前函数的 caller 是谁，就可以检查 ebp 下面
+有哪些函数地址:
+
+0:000> dds ebp
+0013ed98 0013ee24
+ 
+0013ed9c
+ 
+75ecb30f BROWSEUI!BrowserProtectedThreadProc+0x44
+ 
+0013eda0 00163820
+0013eda4 0013ee50
+0013eda8  00163820
+0013edac  00000000
+0013edb0  0013ee10
+0013edb4  75ece83a BROWSEUI!__delayLoadHelper2+0x23a
+0013edb8 00000005
+0013edbc  0013edcc
+0013edc0  0013ee50
+0013edc4 00163820
+0013edc8  00000000
+0013edcc  00000024
+0013edd0  75f36d2c BROWSEUI!_DELAY_IMPORT_DESCRIPTOR_SHELL32
+0013edd4 75f3a184 BROWSEUI!_imp__SHGetInstanceExplorer
+0013edd8  75f36e80 BROWSEUI!_sz_SHELL32
+0013eddc  00000001
+0013ede0  75f3726a BROWSEUI! urlmon_NULL_THUNK_DATA_DLN+0x116
+0013ede4  7c8d0000 SHELL32!_imp__RegCloseKey <PERF> (SHELL32+0x0)
+0013ede8 7c925b34 SHELL32!SHGetInstanceExplorer
+
+这里 DDS 命令自动把 75ecb30f 地址映射到了符号文件中对应的符号信息。
+由于 COM Interface 和 C++ Vtable 里面的成员函数都是顺序排列的，所以这个命令在检查上
+面两种类型的时候特别有用:
+
+首先用 x 命令找到 OpaqueDataInfo 虚函数表地址:
+0:000> x ole32!OpaqueDataInfo::`vftable'
+7768265c ole32!OpaqueDataInfo::`vftable' = <no type information>
+77682680 ole32!OpaqueDataInfo::`vftable' = <no type information>
+
+然后用 dds 命令检查虚函数表中的函数名字:
+0:000> dds 7768265c
+7768265c 77778245 ole32!ServerLocationInfo::QueryInterface
+77682660  77778254 ole32!ScmRequestInfo::AddRef
+77682664  77778263 ole32!ScmRequestInfo::Release
+77682668 77779d26 ole32!OpaqueDataInfo::Serialize
+7768266c 77779d3d ole32!OpaqueDataInfo::UnSerialize
+77682670 77779d7a ole32!OpaqueDataInfo::GetSize
+77682674  77779dcb ole32!OpaqueDataInfo::GetCLSID
+77682678 77779deb ole32!OpaqueDataInfo::SetParent
+7768267c  77779e18 ole32!OpaqueDataInfo::SerializableQueryInterface
+77682680  777799b5 ole32!InstantiationInfo::QueryInterface
+77682684 77689529 ole32!ServerLocationInfo::AddRef
+77682688  776899cc ole32!ScmReplyInfo::Release
+7768268c 77779bcd ole32!OpaqueDataInfo::AddOpaqueData
+77682690 77779c43 ole32!OpaqueDataInfo::GetOpaqueData
+77682694  77779c99 ole32!OpaqueDataInfo::DeleteOpaqueData
+77682698  776a8cf6 ole32!ServerLocationInfo::GetRemoteServerName
+7768269c  776aad96 ole32!OpaqueDataInfo::GetAllOpaqueData
+776826a0  77777a3b ole32!CDdeObject::COleObjectImpl::GetClipboardData
+776826a4 00000021
+776826a8  77703159 ole32!CClassMoniker::QueryInterface
+776826ac  77709b01 ole32!CErrorObject::AddRef
+776826b0 776edaff ole32!CClassMoniker::Release
+776826b4  776ec529 ole32!CClassMoniker::GetUnmarshalClass
+776826b8  776ec546 ole32!CClassMoniker::GetMarshalSizeMax
+776826bc  776ec589 ole32!CClassMoniker::MarshalInterface
+776826c0 77702ca9 ole32!CClassMoniker::UnmarshalInterface
+776826c4  776edbe1 ole32!CClassMoniker::ReleaseMarshalData
+776826c8  776e5690 ole32!CDdeObject::COleItemContainerImpl::LockContainer
+776826cc  7770313b ole32!CClassMoniker::QueryInterface
+776826d0  7770314a ole32!CClassMoniker::AddRef
+776826d4 776ec5a8 ole32!CClassMoniker::Release
+776826d8  776ec4c6 ole32!CClassMoniker::GetComparisonData
+
+下面再用一个小例子来演示
+
+首先在 debug 模式下编译并且 ctrl+f5 运行下面的代码:
+struct innner
+{
+char arr[10];
+};
+class MyCls
+{
+private:
+char* str;
+innner inobj;
+public:
+void set(char* input)
+{
+str=input;
+strcpy(inobj.arr,str);
+}
+int output()
+{
+printf(str);
+return 1;
+}
+void hold()
+{
+getchar();
+}
+};
+
+void foo1()
+{
+MyCls *pcls=new MyCls();
+void *rawptr=pcls;
+pcls->set("abcd");
+pcls->output();
+pcls->hold();
+};
+void foo2()
+{
+printf("in foo2\n");
+foo1();
+};
+void foo3()
+{
+printf("in foo3\n");
+foo2();
+};
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+foo3();
+return 0;
+}
+
+当 console 等待输入的时候，启动 windbg, 然后用 F6 加载目标进程。
+切换到主线程，察看 callstack:
+
+0:000> kn
+# ChildEBP RetAddr
+00 0012f7a0 7c821c94 ntdll!KiFastSystemCallRet
+01 0012f7a4 7c836066 ntdll!NtRequestWaitReplyPort+0xc
+02 0012f7c4 77eaaba3 ntdll!CsrClientCallServer+0x8c
+03 0012f8bc 77eaacb8 kernel32!ReadConsoleInternal+0x1b8
+04 0012f944 77e41990 kernel32!ReadConsoleA+0x3b
+05 0012f99c 10271754 kernel32!ReadFile+0x64
+06 0012fa28 10271158 MSVCR80D!_read_nolock+0x584
+[f:\rtm\vctools\crt_bld\self_x86\crt\src\read.c @ 247]
+07 0012fa74 10297791 MSVCR80D!_read+0x1a8
+[f:\rtm\vctools\crt_bld\self_x86\crt\src\read.c @ 109]
+08 0012fa9c 102a029b MSVCR80D!_filbuf+0x111
+[f:\rtm\vctools\crt_bld\self_x86\crt\src\_filbuf.c @ 136]
+09 0012faf0 102971ce MSVCR80D!getc+0x24b
+[f:\rtm\vctools\crt_bld\self_x86\crt\src\fgetc.c @ 76]
+0a 0012fafc 102971e8 MSVCR80D!_fgetchar+0xe
+[f:\rtm\vctools\crt_bld\self_x86\crt\src\fgetchar.c @ 37]
+0b 0012fb04 0041163b MSVCR80D!getchar+0x8
+[f:\rtm\vctools\crt_bld\self_x86\crt\src\fgetchar.c @ 47]
+0c 0012fbe4 00413f82 exceptioninject!MyCls::hold+0x2b
+[d:\xiongli\today\exceptioninject\exceptioninject\exceptioninject.cpp @ 61]
+0d 0012fcec 0041169a exceptioninject!foo1+0xa2
+[d:\xiongli\today\exceptioninject\exceptioninject\exceptioninject.cpp @ 72]
+0e 0012fdc0 004114fa exceptioninject!foo2+0x3a
+[d:\xiongli\today\exceptioninject\exceptioninject\exceptioninject.cpp @ 77]
+0f 0012fe94 004116d3 exceptioninject!foo3+0x3a
+[d:\xiongli\today\exceptioninject\exceptioninject\exceptioninject.cpp @ 82]
+10 0012ff68 00412016 exceptioninject!wmain+0x23
+[d:\xiongli\today\exceptioninject\exceptioninject\exceptioninject.cpp @ 87]
+11 0012ffb8 00411e5d exceptioninject!__tmainCRTStartup+0x1a6
+[f:\rtm\vctools\crt_bld\self_x86\crt\src\crtexe.c @ 583]
+12 0012ffc0 77e523cd exceptioninject!wmainCRTStartup+0xd
+[f:\rtm\vctools\crt_bld\self_x86\crt\src\crtexe.c @ 403]
+13 0012fff0 00000000 kernel32!BaseProcessStart+0x23
+
+是不是看到跟前面的结果不一样？有的地方有源代码的信息。这是因为 msvcr80D 的 symbol
+是包含了源代码信息的。可以运行 kp 命令看看更多的差别。
+接着，根据前面的序号来切换到对应的函数上下文。用.frame 命令，结合上面的输出找到
+frame number，切换到 exceptioninject!foo1 这个函数:
+0:000> .frame d
+0d 0012fcec 0041169a exceptioninject!foo1+0xa2
+[d:\xiongli\today\exceptioninject\exceptioninject\exceptioninject.cpp @ 72]
+
+用 x 命令显示当前这个函数里面的局部变量
+0:000> x
+0012fce4 pcls = 0x0039ba80
+0012fcd8 rawptr = 0x0039ba80
+
+在符号文件加载的情况下，dt 命令格式化显示 pcls 成员信息
+
+0:000> dt pcls
+Local var @ 0x12fce4 Type MyCls*
+0x0039ba80
+ 
++0x000 str
++0x004 inobj
+ 
+: 0x00416648 "abcd"
+: inner
+ 
+
+用-b -r 参数可以显示 inner class 和数组的信息
+
+0:000> dt pcls -b -r
+Local var @ 0x12fce4 Type MyCls*
+0x0039ba80
+ 
++0x000 str
++0x004 inobj
++0x000 arr
+ 
+: 0x00416648 "abcd"
+: innner
+: "abcd"
+ 
+[00] 97 'a'
+[01] 98 'b'
+[02] 99 'c'
+[03] 100 'd'
+[04] 0 ''
+[05] 0 ''
+[06] 0 ''
+[07] 0 ''
+[08] 0 ''
+[09] 0 ''
+
+对于任意的地址，也可以手动指定符号类型来格式化显示。下面这个命令对地址 0x0039ba80
+指定用 MyCls 类型来显示:
+
+0:000> dt 0x0039ba80 MyCls
+ 
++0x000 str
++0x004 inobj
+ 
+: 0x00416648 "abcd"
+: innner

@@ -1,0 +1,95 @@
+Microsoft CryptoAPI使用心得
+
+最近研究了一下MS CryptoAPI的用法，略有心得。如果需要使用非对称加密方案，MS CryptoAPI倒是一个不错的选择。
+l         每个用户都可以在获取CSP（CryptAcquireContext）时通过指定Container的名称来创建自己的Key Container；也可以使用NULL参数获取缺省的Key Containner；通过Key Container用户可以创建或获取自己的公私钥对。
+
+l         当用户首次使用自己的Key Container时需要创建自己的公私钥对（CryptGenKey）。注意：一旦创建了公私钥对，操作系统就会自动保存下来。
+
+l         CRYPTAPI提供两种公私钥对：“交换公私钥对”和“数字签名公私钥对”。
+
+Exchange Public/Private Key Pair
+
+思想：
+
+2        发送者使用接收者的Public Key对Session Key进行加密，这样只有指定的接收者能够获得正确的Session Key；接收者需要预先将自己的Public Key交给发送者；
+
+2        只对Session Key进行非对称加密，而整个消息使用session key进行对称加密；
+
+2        使用Exchang public/private key pair可以确保消息只能被指定的接收者读取；
+
+
+发送者步骤：
+
+1.      获取或创建指定的CSP（CryptAcquireContext）。
+
+2.      获取或创建自己的Key Container（CryptGetUserKey或CryptGenKey）。
+
+3.      创建一个hash对象（CryptCreateHash）。
+
+4.      根据原始消息生成Hash值（CryptHashData）。
+
+5.      从上述Hash值派生出session key（CryptDeriveKey）。
+
+6.      导入接收者的public key(CryptImportKey).
+
+7.      使用session key对消息进行加密同时使用接收者的public key对session key进行加密。
+
+
+接收者步骤：
+
+1.      获取或创建指定的CSP（CryptAcquireContext）。
+
+2.      获取或创建自己的Key Container（CryptGetUserKey或CryptGenKey）。
+
+3.      使用自己的private key对session key进行解密，然后使用session key对消息进行解密（CryptDecrypt）。
+
+Digital Signature Key Pair
+
+思想：
+
+2        发送者首先产生消息的摘要（注意消息本身并不加密），然后用自己的private key对此摘要进行加密。
+
+2        加密后的摘要作为数字签名，与原始消息一起传递给接收者。
+
+2        接收者使用发送者的public Key的对摘要进行解密并计算收到消息的摘要，然后通过比较确认签名是否正确。
+
+2        使用Digital Signature Key Pair可以确保消息来自指定的发送者，而不是别的冒充者；但它并不保护消息内容不被泄漏
+
+
+发送者步骤：
+
+1.      获取或创建指定的CSP（CryptAcquireContext）。
+
+2.      获取或创建自己的Key Container（CryptGetUserKey或CryptGenKey）。
+
+3.      导出自己的public key给接收端（CryptExportKey）。
+
+4.      创建一个HASH对象（CryptCreateHash）。
+
+5.      计算原始的消息的Hash值（CryptHashData）。
+
+6.      使用自己的private key对Hash值进行加密（CryptSignHash）。
+
+7.      将原始消息和签名后的Hash值发送给接收端。
+
+
+接收者步骤：
+
+1.       获取或创建指定的CSP（CryptAcquireContext）。
+
+2.       导入发送者的public key（CryptImportKey）。
+
+3.       创建一个HASH对象（CryptCreateHash）。
+
+4.       计算原始的消息的Hash值（CryptHashData）。
+
+5.       验证签名是否属于指定的发送者（CryptVerifySignature）。
+
+
+总结：
+
+使用MS CryptoAPI的非对称加密方案时，应根据实际情况选择正确的Key Pair。
+
+l         Exchange Public/Private Key Pair适用于向特定接收者传输数据的情形，前提是发送者需要预知接收者的public key;
+
+l         Digital Signature Key Pair适用于需要验证发送者身份的情形，前提是接收者需要预知发送者的public key。
