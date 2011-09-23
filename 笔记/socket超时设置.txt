@@ -1,0 +1,9 @@
+setsockopt和select在设置超时方面的区别 - 星翼 2009-04-17 04:56
+对于read，write   操作,setsockopt和select在设置非阻塞方面都可以 
+它们有什么区别呢？
+- 嫒雪 2009-04-17 04:56
+setsockopt是通过信号来处理的,   超时的时候,read/write返回-1,   而且精度是毫秒级,同时只能一个句柄阻塞. 
+select可以设置更高的精度(微秒),   同时可以处理多个句柄的阻塞.
+- 珑琉璃 2009-04-17 04:56
+setsockopt方法只要設置一次就行了，以後每個read操作前不需要再設置 
+而select的話，每個read操作都需要設置一下timeout。 

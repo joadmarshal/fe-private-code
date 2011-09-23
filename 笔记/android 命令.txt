@@ -1,0 +1,9 @@
+查看安装的软件
+adb shell 
+
+cd data/app 
+
+ls 
+
+
+adb pull /data/app/cn.com.fetion7-1.apk c:\apk\cn.com.fetion7-1.apk 

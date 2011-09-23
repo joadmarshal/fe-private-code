@@ -1,0 +1,22 @@
+GO
+use master
+GO
+CREATE Function ipconvert_n2addr(@srcnum decimal(18,0))
+returns varchar(100)
+as
+begin
+	declare @ret varchar(100)
+	declare @srcbinary binary(4)
+	declare @t1 int
+	declare @t2 int
+	declare @t3 int
+	declare @t4 int
+
+	set @srcbinary = cast(cast (@srcnum as bigint) as binary(4))
+	set @t1=substring(@srcbinary,1,1)
+	set @t2=substring(@srcbinary,2,1)
+	set @t3=substring(@srcbinary,3,1)
+	set @t4=substring(@srcbinary,4,1)
+	set @ret = cast(@t1 as varchar(3)) +'.'+ cast(@t2 as varchar(3)) +'.'+ cast(@t3 as varchar(3))+'.'+cast(@t4 as varchar(3))
+	return @ret
+end

@@ -1,0 +1,5 @@
+_variant_t vtEffect; 
+m_DBCnt->Execute("update....",&vtEffect,adCmdText); 
+if (vtEffect.lval == 0) 
+    m_DBCnt->Execute("insert into...",NULL,adCmdText);
+

@@ -1,0 +1,48 @@
+--删除表外键的存储过程
+GO
+CREATE PROCEDURE sp_drop_fk      
+@srctbname	varchar(255)
+as   
+declare @sql varchar(255) 
+declare @tbname varchar(255)    
+declare dropsql_cursor cursor for      
+select object_name(rkeyid),'alter table '+object_name(fkeyid)+' drop constraint '+object_name(constid)+char(10) from sysreferences     
+ 
+open dropsql_cursor     
+ 
+fetch NEXT From dropsql_cursor into @tbname,@sql     
+ 
+begin tran     
+while @@fetch_status=0     
+begin   
+    
+	if @srctbname = @tbname
+	begin 
+		execute(@sql)
+		if @@error <> 0     
+		begin   
+			rollback   
+			return   
+		end   
+	end
+    fetch next From dropsql_cursor into @tbname,@sql     
+ 
+end   
+deallocate dropsql_cursor     
+ 
+commit  
+
+--删除主键的存储过程
+GO
+CREATE PROCEDURE sp_drop_pk    
+@srctbname	varchar(255)
+as
+Declare @Pk varChar(100);
+Select @Pk=Name from sysobjects where Parent_Obj=OBJECT_ID(@srctbname) and xtype='PK';
+
+if @Pk is not null exec('Alter table tableName Drop '+ @Pk)  
+
+
+--删除重复记录
+GO
+delete from tbl_list where macaddr not in (select max(macaddr) from tbl_list group by clientid) -

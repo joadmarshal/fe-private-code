@@ -12,9 +12,9 @@ setsockopt(s,SOL_SOCKET,SO_DONTLINGER,(const char*)&bDontLinger,sizeof(BOOL));
 3.在send(),recv()过程中有时由于网络状况等原因，发收不能预期进行,而设置收发时限：
 int nNetTimeout=1000;//1秒
 //发送时限
-setsockopt(socket，SOL_S0CKET,SO_SNDTIMEO，(char *)&nNetTimeout,sizeof(int));
+setsockopt(socket,SOL_S0CKET,SO_SNDTIMEO,(char *)&nNetTimeout,sizeof(int));
 //接收时限
-setsockopt(socket，SOL_S0CKET,SO_RCVTIMEO，(char *)&nNetTimeout,sizeof(int));
+setsockopt(socket,SOL_S0CKET,SO_RCVTIMEO,(char *)&nNetTimeout,sizeof(int));
 
 
 4.在send()的时候，返回的是实际发送出去的字节(同步)或发送到socket缓冲区的字节

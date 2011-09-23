@@ -1,0 +1,71 @@
+ Sql Server 添加删除字段判断表或字段是否存在得到字段描述
+分类： Sql Server Study 2009-07-08 15:31 1163人阅读 评论(1) 收藏 举报
+Sql Server 添加删除字段判断表或字段是否存在得到字段描述
+
+ 
+
+增加字段
+alter table docdsp  add dspcode char(200)
+删除字段
+ALTER TABLE table_NAME DROP COLUMN column_NAME
+修改字段类型
+ALTER TABLE table_name  ALTER COLUMN column_name new_data_type
+改名
+sp_rename
+更改当前数据库中用户创建对象（如表、列或用户定义数据类型）的名称。 
+语法
+sp_rename [ @objname = ] 'object_name' ,
+    [ @newname = ] 'new_name'
+    [ , [ @objtype = ] 'object_type' ]
+=======================================================
+ 
+
+--假设要处理的表名为: tb
+
+--判断要添加列的表中是否有主键
+if exists(select 1 from sysobjects where parent_obj=object_id('tb') and xtype='PK')
+begin
+ print '表中已经有主键,列只能做为普通列添加'
+
+ --添加int类型的列,默认值为0
+ alter table tb add 列名 int default 0  
+end
+else
+begin
+ print '表中无主键,添加主键列'
+
+ --添加int类型的列,默认值为0
+ alter table tb add 列名 int primary key default 0  
+end
+/**************************************************************************************/
+
+判断table1中是否存在name字段
+if exists(select * from syscolumns where id=object_id('table1') and name='name') begin
+select * from people;
+end
+========================================================================
+如果是实表可以用
+
+if exists (select * from sysobjects where id = object_id(N'[dbo].[表名]') and OBJECTPROPERTY(id, N'IsUserTable') = 1) drop table [dbo].[表名]--如果表存在就删除
+
+如果是临时表可以用
+
+if   object_id('tempdb..##temp')   is   not   null   
+   drop   table   ##temp 
+
+说明,如果用查找实表方法来打临时表会找不到.发布区别对代.
+==========================================================
+得到表字段的描述
+
+我一般用这个视图   
+  Create   view   fielddesc           
+  as           
+  select   o.name   as   oname,   c.name   as   cname,convert(varchar(30),p.value)   as   value,p.smallid   as   psmallid,t.name   as   tname     
+  from   syscolumns   c       
+  join   systypes   t   on   c.xtype   =   t.xtype   
+  join   sysobjects   o   on   o.id=c.id     
+  left   join         sysproperties   p   on   p.smallid=c.colid   and   p.id=o.id           
+  where   o.xtype='U'           
+    
+  查询时:   
+  Select   *   from   fielddesc   where   oname   =   '你的表名'

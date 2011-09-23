@@ -1,0 +1,6 @@
+select * from tbl_list a,
+(select mac,
+(select top 1 policystatus from tbl_clientpolicystatus tb where tb.mac=mac and policytype = 'ServicePackMJ') as ServicePackMJ,
+(select top 1 policystatus from tbl_clientpolicystatus tb where tb.mac=mac and policytype = 'ServicePackMN') as ServicePackMN,
+(select top 1 policystatus from tbl_clientpolicystatus tb where tb.mac=mac and policytype = 'ServicePackName') as ServicePackName 
+from dbo.tbl_clientpolicystatus group by mac) as b where a.macaddr=b.mac
