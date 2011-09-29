@@ -341,32 +341,20 @@ long FileToMd5(const char *file,char *buff)
 	MD5_CTX md5;
 	if(buff==NULL)
 		return -1;
-// 	std::ifstream inf(file,std::ios::binary);
-// 	if(!inf.is_open())
-// 		return -2;
-
 	FILE *pf;
 	pf=fopen(file,"rb");
 	if(!pf)
 		return -2;
 	buff[32]=0;
 	int count=0;
-	char *temp_buff=new char[MD5_BUFF_SIZE];
-// 	while (!inf.eof())
-// 	{
-// 		inf.read(temp_buff,MD5_BUFF_SIZE);
-// 		count+=inf.gcount();
-// 		md5.MD5Update(reinterpret_cast<unsigned char *>(temp_buff),inf.gcount());
-// 	}
+	char temp_buff[MD5_BUFF_SIZE];
 	int gcount=0;
 	while (gcount=fread(temp_buff,sizeof(char),MD5_BUFF_SIZE,pf))
 	{
 		md5.MD5Update(reinterpret_cast<unsigned char *>(temp_buff),gcount);
 	}
-	delete temp_buff;
 	unsigned char fs[16];
 	md5.MD5Final(fs);
-	//inf.close();
 	fclose(pf);
 	int p=0;
 	for (int i = 0; i<16; i++)

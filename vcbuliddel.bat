@@ -14,4 +14,5 @@ for /r . %%c in ("*VA_C__Documents and Settings_Administrator_Local Settings_App
 
 echo É¾³ýÍê±Ï...
 
+#gcode psw uH6Fj2ew7nB3
 pause

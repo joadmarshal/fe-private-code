@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
 	PROCESS_INFORMATION pi; 
 	si.cb = sizeof(STARTUPINFO);
 	GetStartupInfo(&si); 
+	si.dwFlags=STARTF_USESTDHANDLES;//¹Ø¼ü
 	si.hStdError = hWrite;
 	si.hStdOutput = hWrite;
 	si.wShowWindow = SW_SHOW;

@@ -83,7 +83,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= 0;
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+	wcex.hbrBackground	= (HBRUSH)(NULL_BRUSH);
 	wcex.lpszMenuName	= 0;
 	wcex.lpszClassName	= szWindowClass;
 	wcex.hIconSm		= 0;
@@ -119,10 +119,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	SetWindowLong(hWnd,GWL_STYLE,LONGlStyle&~WS_CAPTION);
 	SetWindowPos(hWnd,NULL,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE|SWP_FRAMECHANGED);
-	SetLayeredWindowAttributes(hWnd,RGB(255,255,255),255,LWA_COLORKEY);
+	//SetLayeredWindowAttributes(hWnd,RGB(255,255,255),255,LWA_COLORKEY);
 	HRGN hrgn = CreateRoundRectRgn(0,0,400,400,400,400);
 	SetWindowRgn(hWnd,hrgn,TRUE);
-	
+	LoadImage()
 	int i = GetLastError();
 //	SetLayeredWindowAttributes
 // 	SetWindowRgn();
