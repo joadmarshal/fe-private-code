@@ -1,0 +1,38 @@
+VNC 远程桌面 配置/使用 for xfce
+[编辑] 本贴主要目的为说明如何在windows系统下远程控制xfce桌面
+Ubuntu 的默认GNOME桌面可以在系统设置中直接打开远程桌面，然后用Windows下的VNCviewer访问。
+
+在Xfce下我没有找到相应的选项，不过软件x11vnc在我看来是为了同样的功能而存在的。以下介绍安装配置过程。
+
+我们需要做两件事，在xfce客户机安装x11vnc的server并打开服务，以及在控制机使用vncviewer访问。
+
+[编辑] 安装x11vnc服务（于xfce客户机）
+直接安装即可
+
+sudo apt-get install x11vnc
+装好后打开服务
+
+sudo x11vnc -forever -passwd ******
+参数说明
+
+-forever 表示服务一直开启，就是说可以多次连接/退出，不加此参数的话登录一次后server自动关闭
+
+-passwd 用来设置登录密码，请将******自行替换为密码
+
+执行后屏幕会显示5900端口已经被打开，此时就可以从其他地方远程登录了
+
+[编辑] 从windows控制机访问
+windows下的访问软件就叫做vncviewer，单纯的访问只需要一个二百多K的小程序，不用安装十分方便。
+
+下载地址大家可以在论坛内或者baidu搜一下，使用很简单，先输入客户机IP，再输入密码即可。
+
+[编辑] 比较
+根据实际使用经验，用VNC远程控制GNOME桌面的速度让人无法忍受，相比而言控制XFCE时就流畅很多。
+
+[编辑]连接远程 Ubuntu 桌面
+本文假定已经在 Ubuntu 中配置好了远程桌面
+
+假定要连接的远程 Ubuntu 电脑ip地址是: 192.168.0.1
+
+vncviewer -fullscreen 192.168.0.1:0
+按 'F8' -> 退出 viewer
