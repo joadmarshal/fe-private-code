@@ -1,6 +1,8 @@
 #coding:GBK
 from os.path import walk, join, normpath
 from macpath import normpath
+import os 
+
 import sys
 
 def checkNetWorkLink(dspfile):
@@ -19,5 +21,6 @@ def mydir(arg, dirname, names):#dirname目录名,names文件名序列
     #print "\n".join(files)
 
 if __name__=="__main__":
-    path='F:\epol'
+    path='E:\\workspace_epol\\newest\\epol'
     walk(path, mydir, 0)#walk 枚举每个目录，运行mydir
+    os.system('pause')
