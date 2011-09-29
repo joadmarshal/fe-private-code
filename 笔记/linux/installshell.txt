@@ -1,0 +1,8 @@
+#!/bin/sh
+sudo apt-get -y install mysql-server
+sudo apt-get -y install apache2
+sudo apt-get -y install p
+sudo apt-get -y install scim
+sudo apt-get -y install scim-tables-zh
+echo "press and key"
+read var:
